@@ -1,0 +1,14 @@
+[
+  {
+    "label": "Build & Launch Engine",
+    "command": "cmake --build build --target engine && cd bin && ./engine",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+  },
+  {
+    "label": "Build Shaders",
+    "command": "cmake --build build --target Shaders",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+  },
+]

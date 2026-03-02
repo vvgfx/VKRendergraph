@@ -1,0 +1,8 @@
+[
+  {
+    "bindings": {
+      "f5": ["task::Spawn", { "task_name": "Build & Launch Engine" }],
+      "f6": ["task::Spawn", { "task_name": "Build Shaders" }],
+    },
+  },
+]
