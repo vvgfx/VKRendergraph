@@ -1,5 +1,23 @@
 [
   {
+    "label": "Configure",
+    "command": "cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+  },
+  {
+    "label": "Build",
+    "command": "cmake --build build",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+  },
+  {
+    "label": "Build Engine",
+    "command": "cmake --build build --target engine",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+  },
+  {
     "label": "Build & Launch Engine",
     "command": "cmake --build build --target engine && cd bin && ./engine",
     "use_new_terminal": false,
@@ -8,6 +26,18 @@
   {
     "label": "Build Shaders",
     "command": "cmake --build build --target Shaders",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+  },
+  {
+    "label": "Clean",
+    "command": "cmake --build build --target clean",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+  },
+  {
+    "label": "Clean Rebuild",
+    "command": "cmake --build build --clean-first",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
   },
