@@ -211,8 +211,8 @@ void rgraph::RendergraphBuilder::Run(FrameData &frameData)
         // Create buffers if required.
         PassExecution exec;
 
-        // temp VV
-        GPUResourceAllocator gpuResourceAllocator = GPUResourceAllocator::GetInstance();
+
+        GPUResourceAllocator* gpuResourceAllocator = &GPUResourceAllocator::GetInstance();
 
         // potential for memory aliasing here.
         if (pass.bufferCreations.size() > 0)
@@ -220,11 +220,11 @@ void rgraph::RendergraphBuilder::Run(FrameData &frameData)
             // create the buffers.
             for (auto &bufferCreateInfo : pass.bufferCreations)
             {
-                AllocatedBuffer newBuffer = gpuResourceAllocator.create_buffer(
+                AllocatedBuffer newBuffer = gpuResourceAllocator->create_buffer(
                     bufferCreateInfo.size, bufferCreateInfo.usageFlags, VMA_MEMORY_USAGE_CPU_TO_GPU);
                 exec.allocatedBuffers[bufferCreateInfo.name] = newBuffer;
                 frameData._deletionQueue.push_function([=, this]()
-                                                       { GPUResourceAllocator::GetInstance().destroy_buffer(newBuffer); });
+                                                       { gpuResourceAllocator->destroy_buffer(newBuffer); });
             }
         }
 

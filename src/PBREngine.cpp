@@ -33,7 +33,6 @@ void PBREngine::init()
     creatorData.defaultImage = _whiteImage;
     creatorData.loadErrorImage = _errorCheckerboardImage;
     creatorData._device = _device;
-    // creatorData.gpuResourceAllocator = getGPUResourceAllocator(); // VV change here.
     creatorData.materialSystemReference =
         &materialSystemInstance; // this would change to a reference from the material system in PBRShadingFeature.
 
@@ -57,7 +56,7 @@ void PBREngine::init()
                                                         _gpuSceneDataDescriptorLayout, _mainDeletionQueue);
     builder.AddTrackedImage("drawImage", VK_IMAGE_LAYOUT_UNDEFINED, _drawImage);
     builder.AddTrackedImage("depthImage", VK_IMAGE_LAYOUT_UNDEFINED, _depthImage);
-    builder.setReqData(_device, _drawImage.imageExtent); // VV change here.
+    builder.setReqData(_device, _drawImage.imageExtent);
     builder.AddFeature(computeFeature);
     builder.AddFeature(PBRFeature);
 
@@ -193,7 +192,7 @@ void PBREngine::testRendergraph()
                                                         _gpuSceneDataDescriptorLayout, _mainDeletionQueue);
     builder.AddTrackedImage("drawImage", VK_IMAGE_LAYOUT_UNDEFINED, testDrawImage);
     builder.AddTrackedImage("depthImage", VK_IMAGE_LAYOUT_UNDEFINED, testDepthImage);
-    builder.setReqData(_device, testDrawImage.imageExtent); // VV change here.
+    builder.setReqData(_device, testDrawImage.imageExtent);
     builder.AddFeature(computeFeature);
     builder.AddFeature(PBRFeature);
     builder.Build(get_current_frame());
