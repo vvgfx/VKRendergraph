@@ -7,7 +7,7 @@ class VulkanEngine;
 class GPUResourceAllocator
 {
   public:
-    static void init(VmaAllocator &_allocator, VkDevice _device, VulkanEngine *_engine);
+    static void init(VmaAllocator &_allocator, VkDevice _device);
 
     static GPUResourceAllocator& GetInstance();
 

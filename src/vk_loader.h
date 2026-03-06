@@ -44,7 +44,6 @@ struct GLTFCreatorData
 {
     VkDevice _device;
     AllocatedImage loadErrorImage;
-    // GPUResourceAllocator *gpuResourceAllocator;
     AllocatedImage defaultImage;
     VkSampler _defaultSamplerLinear;
     GLTFMRMaterialSystem *materialSystemReference;

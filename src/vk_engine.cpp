@@ -132,7 +132,7 @@ void VulkanEngine::init_vulkan()
     allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
     vmaCreateAllocator(&allocatorInfo, &_allocator);
 
-    GPUResourceAllocator::init(_allocator, _device, this);
+    GPUResourceAllocator::init(_allocator, _device);
 
     _mainDeletionQueue.push_function([&]() { vmaDestroyAllocator(_allocator); });
 }
@@ -921,8 +921,3 @@ void VulkanEngine::draw_imgui(VkCommandBuffer cmd, VkImageView targetImageView)
 }
 
 // }}} END DRAW
-
-// GPUResourceAllocator *VulkanEngine::getGPUResourceAllocator()
-// {
-//     return &_gpuResourceAllocator;
-// }

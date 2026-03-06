@@ -16,19 +16,25 @@
 GPUResourceAllocator* instance = nullptr;
 
 
-void GPUResourceAllocator::init(VmaAllocator &_allocator, VkDevice _device, VulkanEngine *_engine)
+void GPUResourceAllocator::init(VmaAllocator &_allocator, VkDevice _device)
 {
     if(!instance)
+    {
         instance = new GPUResourceAllocator();
+        instance->_allocator = _allocator;
+        instance->_device = _device;
+        instance->_engine = &VulkanEngine::Get();
+        return;
+    }
 
-    instance->_allocator = _allocator;
-    instance->_device = _device;
-    instance->_engine = _engine;
+    throw ("GPUResourceAllocator is initialized more than once");
 }
 
 GPUResourceAllocator& GPUResourceAllocator::GetInstance()
 {
-    return *instance;
+    if(instance)
+        return *instance;
+    throw ("GPUResourceAllocator was retrieved without initialization");
 }
 
 AllocatedBuffer GPUResourceAllocator::create_buffer(size_t allocSize, VkBufferUsageFlags usage,
