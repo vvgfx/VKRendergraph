@@ -161,7 +161,7 @@ class VulkanEngine
     AllocatedImage _depthImage; // depth testing
     VkExtent2D _drawExtent;
     DescriptorAllocatorGrowable globalDescriptorAllocator;
-    GPUResourceAllocator _gpuResourceAllocator;
+    // GPUResourceAllocator _gpuResourceAllocator;
 
     VkDescriptorSet _drawImageDescriptors;
     VkDescriptorSetLayout _drawImageDescriptorLayout;

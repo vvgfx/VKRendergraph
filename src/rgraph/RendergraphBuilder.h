@@ -135,8 +135,7 @@ namespace rgraph
 
         void AddFeature(std::weak_ptr<IFeature> feature);
 
-        // temporary, will need to check later on where to call this
-        void setReqData(VkDevice _device, VkExtent3D _extent, GPUResourceAllocator *gpuAllocator);
+        void setReqData(VkDevice _device, VkExtent3D _extent);
 
         // performance stuff.
         void SetTimestampPeriod(float period)
@@ -165,7 +164,7 @@ namespace rgraph
         std::vector<std::weak_ptr<IFeature>> features;
 
         std::unordered_map<std::string, std::vector<TransitionData>> transitionData;
-        GPUResourceAllocator *gpuResourceAllocator;
+        // GPUResourceAllocator *gpuResourceAllocator;
         VkDevice _device;
         VkExtent3D _extent;
 

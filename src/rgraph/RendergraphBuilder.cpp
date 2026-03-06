@@ -210,17 +210,21 @@ void rgraph::RendergraphBuilder::Run(FrameData &frameData)
 
         // Create buffers if required.
         PassExecution exec;
+
+        // temp VV
+        GPUResourceAllocator gpuResourceAllocator = GPUResourceAllocator::GetInstance();
+
         // potential for memory aliasing here.
         if (pass.bufferCreations.size() > 0)
         {
             // create the buffers.
             for (auto &bufferCreateInfo : pass.bufferCreations)
             {
-                AllocatedBuffer newBuffer = gpuResourceAllocator->create_buffer(
+                AllocatedBuffer newBuffer = gpuResourceAllocator.create_buffer(
                     bufferCreateInfo.size, bufferCreateInfo.usageFlags, VMA_MEMORY_USAGE_CPU_TO_GPU);
                 exec.allocatedBuffers[bufferCreateInfo.name] = newBuffer;
                 frameData._deletionQueue.push_function([=, this]()
-                                                       { gpuResourceAllocator->destroy_buffer(newBuffer); });
+                                                       { GPUResourceAllocator::GetInstance().destroy_buffer(newBuffer); });
             }
         }
 
@@ -300,11 +304,11 @@ void rgraph::RendergraphBuilder::AddFeature(std::weak_ptr<IFeature> feature)
     features.emplace_back(feature);
 }
 
-void rgraph::RendergraphBuilder::setReqData(VkDevice _device, VkExtent3D _extent, GPUResourceAllocator *gpuAllocator)
+void rgraph::RendergraphBuilder::setReqData(VkDevice _device, VkExtent3D _extent)
 {
     this->_device = _device;
     this->_extent = _extent;
-    this->gpuResourceAllocator = gpuAllocator;
+    // this->gpuResourceAllocator = &GPUResourceAllocator::GetInstance();
 }
 
 void rgraph::Pass::CreatesBuffer(const std::string name, size_t size, VkBufferUsageFlags usages)

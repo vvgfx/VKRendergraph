@@ -132,7 +132,7 @@ void VulkanEngine::init_vulkan()
     allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
     vmaCreateAllocator(&allocatorInfo, &_allocator);
 
-    _gpuResourceAllocator.init(_allocator, _device, this);
+    GPUResourceAllocator::init(_allocator, _device, this);
 
     _mainDeletionQueue.push_function([&]() { vmaDestroyAllocator(_allocator); });
 }
@@ -162,6 +162,7 @@ void VulkanEngine::init_swapchain()
     rimg_allocinfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     // allocate and create the image
+    GPUResourceAllocator _gpuResourceAllocator = GPUResourceAllocator::GetInstance();
     _gpuResourceAllocator.create_image(&rimg_info, &rimg_allocinfo, &_drawImage.image, &_drawImage.allocation, nullptr);
 
     // build a image-view for the draw image to use for rendering
@@ -193,6 +194,7 @@ void VulkanEngine::init_swapchain()
     _mainDeletionQueue.push_function(
         [=, this]()
         {
+            auto _gpuResourceAllocator = GPUResourceAllocator::GetInstance();
             vkDestroyImageView(_device, _drawImage.imageView, nullptr);
             _gpuResourceAllocator.destroy_image(_drawImage.image, _drawImage.allocation);
 
@@ -433,6 +435,8 @@ void VulkanEngine::init_background_pipelines()
 
 void VulkanEngine::init_default_data()
 {
+
+    GPUResourceAllocator _gpuResourceAllocator = GPUResourceAllocator::GetInstance();
     // 3 default textures, white, grey, black. 1 pixel each
     uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
     _whiteImage = _gpuResourceAllocator.create_image((void *)&white, VkExtent3D{1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM,
@@ -467,11 +471,11 @@ void VulkanEngine::init_default_data()
     vkCreateSampler(_device, &sampl, nullptr, &_defaultSamplerLinear);
 
     _mainDeletionQueue.push_function(
-        [&]()
+        [=, this]()
         {
             vkDestroySampler(_device, _defaultSamplerNearest, nullptr);
             vkDestroySampler(_device, _defaultSamplerLinear, nullptr);
-
+            GPUResourceAllocator _gpuResourceAllocator = GPUResourceAllocator::GetInstance();
             _gpuResourceAllocator.destroy_image(_whiteImage);
             _gpuResourceAllocator.destroy_image(_greyImage);
             _gpuResourceAllocator.destroy_image(_blackImage);
@@ -918,7 +922,7 @@ void VulkanEngine::draw_imgui(VkCommandBuffer cmd, VkImageView targetImageView)
 
 // }}} END DRAW
 
-GPUResourceAllocator *VulkanEngine::getGPUResourceAllocator()
-{
-    return &_gpuResourceAllocator;
-}
+// GPUResourceAllocator *VulkanEngine::getGPUResourceAllocator()
+// {
+//     return &_gpuResourceAllocator;
+// }

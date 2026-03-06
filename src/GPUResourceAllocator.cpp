@@ -13,11 +13,22 @@
 #pragma clang diagnostic pop
 #endif
 
+GPUResourceAllocator* instance = nullptr;
+
+
 void GPUResourceAllocator::init(VmaAllocator &_allocator, VkDevice _device, VulkanEngine *_engine)
 {
-    this->_allocator = _allocator;
-    this->_device = _device;
-    this->_engine = _engine;
+    if(!instance)
+        instance = new GPUResourceAllocator();
+
+    instance->_allocator = _allocator;
+    instance->_device = _device;
+    instance->_engine = _engine;
+}
+
+GPUResourceAllocator& GPUResourceAllocator::GetInstance()
+{
+    return *instance;
 }
 
 AllocatedBuffer GPUResourceAllocator::create_buffer(size_t allocSize, VkBufferUsageFlags usage,

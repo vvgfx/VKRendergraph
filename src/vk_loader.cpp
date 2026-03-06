@@ -20,7 +20,7 @@
 // forward declaration of global functions
 VkFilter extract_filter(fastgltf::Filter filter);
 VkSamplerMipmapMode extract_mipmap_mode(fastgltf::Filter filter);
-std::optional<AllocatedImage> load_image(GPUResourceAllocator *gpuResourceAllocator, fastgltf::Asset &asset,
+std::optional<AllocatedImage> load_image(fastgltf::Asset &asset,
                                          fastgltf::Image &image);
 
 std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creatorData, std::string_view filePath)
@@ -131,10 +131,12 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
         lights.push_back(ldata);
     }
 
+    GPUResourceAllocator gpuResourceAllocator = GPUResourceAllocator::GetInstance();
+
     // load all textures
     for (fastgltf::Image &image : gltf.images)
     {
-        std::optional<AllocatedImage> img = load_image(creatorData.gpuResourceAllocator, gltf, image);
+        std::optional<AllocatedImage> img = load_image(gltf, image);
 
         if (img.has_value())
         {
@@ -150,7 +152,7 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
         }
     }
 
-    file.materialDataBuffer = creatorData.gpuResourceAllocator->create_buffer(
+    file.materialDataBuffer = gpuResourceAllocator.create_buffer(
         sizeof(GLTFMRMaterialSystem::MaterialConstants) * gltf.materials.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         VMA_MEMORY_USAGE_CPU_TO_GPU);
     int data_index = 0;
@@ -327,7 +329,7 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
             newmesh->surfaces.push_back(newSurface);
         }
 
-        newmesh->meshBuffers = creatorData.gpuResourceAllocator->uploadMesh(indices, vertices);
+        newmesh->meshBuffers = gpuResourceAllocator.uploadMesh(indices, vertices);
     }
 
     // load all nodes and their meshes
@@ -412,14 +414,16 @@ void sgraph::GLTFScene::clearAll()
 {
     VkDevice dv = creator._device;
 
+    GPUResourceAllocator gpuResourceAllocator = GPUResourceAllocator::GetInstance();
+
     descriptorPool.destroy_pools(dv);
-    creator.gpuResourceAllocator->destroy_buffer(materialDataBuffer);
+    gpuResourceAllocator.destroy_buffer(materialDataBuffer);
 
     for (auto &[k, v] : meshes)
     {
 
-        creator.gpuResourceAllocator->destroy_buffer(v->meshBuffers.indexBuffer);
-        creator.gpuResourceAllocator->destroy_buffer(v->meshBuffers.vertexBuffer);
+        gpuResourceAllocator.destroy_buffer(v->meshBuffers.indexBuffer);
+        gpuResourceAllocator.destroy_buffer(v->meshBuffers.vertexBuffer);
     }
 
     for (auto &[k, v] : images)
@@ -430,7 +434,7 @@ void sgraph::GLTFScene::clearAll()
             // dont destroy the default images
             continue;
         }
-        creator.gpuResourceAllocator->destroy_image(v);
+        gpuResourceAllocator.destroy_image(v);
     }
 
     for (auto &sampler : samplers)
@@ -471,12 +475,14 @@ VkSamplerMipmapMode extract_mipmap_mode(fastgltf::Filter filter)
     }
 }
 
-std::optional<AllocatedImage> load_image(GPUResourceAllocator *gpuResourceAllocator, fastgltf::Asset &asset,
+std::optional<AllocatedImage> load_image(fastgltf::Asset &asset,
                                          fastgltf::Image &image)
 {
     AllocatedImage newImage{};
 
     int width, height, nrChannels;
+
+    GPUResourceAllocator gpuResourceAllocator = GPUResourceAllocator::GetInstance();
 
     std::visit(
         fastgltf::visitor{
@@ -497,7 +503,7 @@ std::optional<AllocatedImage> load_image(GPUResourceAllocator *gpuResourceAlloca
                     imagesize.height = height;
                     imagesize.depth = 1;
 
-                    newImage = gpuResourceAllocator->create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
+                    newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
                                                                   VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
                     stbi_image_free(data);
@@ -515,7 +521,7 @@ std::optional<AllocatedImage> load_image(GPUResourceAllocator *gpuResourceAlloca
                     imagesize.height = height;
                     imagesize.depth = 1;
 
-                    newImage = gpuResourceAllocator->create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
+                    newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
                                                                   VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
                     stbi_image_free(data);
@@ -544,7 +550,7 @@ std::optional<AllocatedImage> load_image(GPUResourceAllocator *gpuResourceAlloca
                                 imagesize.height = height;
                                 imagesize.depth = 1;
 
-                                newImage = gpuResourceAllocator->create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
+                                newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
                                                                               VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
                                 stbi_image_free(data);
@@ -562,7 +568,7 @@ std::optional<AllocatedImage> load_image(GPUResourceAllocator *gpuResourceAlloca
                                 imagesize.height = height;
                                 imagesize.depth = 1;
 
-                                newImage = gpuResourceAllocator->create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
+                                newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
                                                                               VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
                                 stbi_image_free(data);
