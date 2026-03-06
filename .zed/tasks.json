@@ -7,13 +7,13 @@
   },
   {
     "label": "Build",
-    "command": "cmake --build build",
+    "command": "cmake --build build | cat",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
   },
   {
     "label": "Build Engine",
-    "command": "cmake --build build --target engine",
+    "command": "cmake --build build --target engine | cat",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
   },
@@ -31,13 +31,13 @@
   },
   {
     "label": "Clean",
-    "command": "cmake --build build --target clean",
+    "command": "cmake --build build --target clean | cat",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
   },
   {
     "label": "Clean Rebuild",
-    "command": "cmake --build build --clean-first",
+    "command": "cmake --build build --clean-first | cat && cmake --build build --target Shaders",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
   },
