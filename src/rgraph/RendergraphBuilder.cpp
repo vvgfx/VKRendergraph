@@ -46,6 +46,21 @@ void rgraph::Pass::AddDepthStencilAttachment(const std::string name, bool store,
     depthAttachment.name = name;
 }
 
+void rgraph::Pass::AddResolveTarget(std::string resolveColorImageName, std::string resolveDepthImageName)
+{
+    if (!resolveColorImageName.empty())
+    {
+        bresolveColor = true;
+        this->resolveColorImageName = resolveColorImageName;
+    }
+
+    if (!resolveDepthImageName.empty())
+    {
+        bresolveColor = true;
+        this->resolveDepthImageName = resolveDepthImageName;
+    }
+}
+
 void rgraph::RendergraphBuilder::AddComputePass(const std::string name, std::function<void(Pass &)> setup,
                                                 std::function<void(PassExecution &)> run)
 {
@@ -158,6 +173,15 @@ void rgraph::RendergraphBuilder::Build(FrameData &frameData)
                                                  VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL});
             imgLayoutMap[pass.depthAttachment.name] = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
         }
+
+        // for resolution targets.
+        if (imgLayoutMap.contains(pass.resolveColorImageName) &&
+            imgLayoutMap[pass.resolveColorImageName] != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+        {
+            transitionData[pass.name].push_back({pass.resolveColorImageName, imgLayoutMap[pass.resolveColorImageName],
+                                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL});
+            imgLayoutMap[pass.resolveColorImageName] = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        }
     }
 }
 
@@ -245,14 +269,27 @@ void rgraph::RendergraphBuilder::Run(FrameData &frameData)
 
             AllocatedImage drawImage = images[pass.colorAttachments[0].name];
             AllocatedImage depthImage = images[pass.depthAttachment.name];
+            VkRenderingAttachmentInfo colorAttachment;
+            if (!pass.bresolveColor)
+                colorAttachment =
+                    vkinit::attachment_info(drawImage.imageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+            else
+                colorAttachment =
+                    vkinit::attachment_info(drawImage.imageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                            images[pass.resolveColorImageName].imageView,
+                                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_RESOLVE_MODE_AVERAGE_BIT);
 
-            VkRenderingAttachmentInfo colorAttachment =
-                vkinit::attachment_info(drawImage.imageView, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+            VkRenderingAttachmentInfo depthAttachment;
 
             // setup depth attachment similarly
-            VkRenderingAttachmentInfo depthAttachment =
-                vkinit::depth_attachment_info(depthImage.imageView, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-
+            if (!pass.bresolveDepth)
+                depthAttachment =
+                    vkinit::depth_attachment_info(depthImage.imageView, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+            else
+                depthAttachment = vkinit::depth_attachment_info(
+                    depthImage.imageView, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+                    images[pass.resolveDepthImageName].imageView, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+                    VK_RESOLVE_MODE_AVERAGE_BIT);
             VkRenderingInfo renderInfo =
                 vkinit::rendering_info({_extent.width, _extent.height}, &colorAttachment, &depthAttachment);
             vkCmdBeginRendering(cmd, &renderInfo);
@@ -307,7 +344,6 @@ void rgraph::RendergraphBuilder::setReqData(VkDevice _device, VkExtent3D _extent
 {
     this->_device = _device;
     this->_extent = _extent;
-    // this->gpuResourceAllocator = &GPUResourceAllocator::GetInstance();
 }
 
 void rgraph::Pass::CreatesBuffer(const std::string name, size_t size, VkBufferUsageFlags usages)

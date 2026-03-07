@@ -11,6 +11,7 @@
 #include "vk_types.h"
 #include <PBREngine.h>
 #include <memory>
+#include <vulkan/vulkan_core.h>
 
 void PBREngine::init()
 {
@@ -53,6 +54,9 @@ void PBREngine::init()
 
     builder.AddTrackedImage("drawImage", VK_IMAGE_LAYOUT_UNDEFINED, _drawImage);
     builder.AddTrackedImage("depthImage", VK_IMAGE_LAYOUT_UNDEFINED, _depthImage);
+    builder.AddTrackedImage("msaaColor", VK_IMAGE_LAYOUT_UNDEFINED, msaaColor);
+    builder.AddTrackedImage("msaaDepth", VK_IMAGE_LAYOUT_UNDEFINED, msaaDepth);
+
     builder.setReqData(_device, _drawImage.imageExtent);
     builder.AddFeature(computeFeature);
     builder.AddFeature(PBRFeature);

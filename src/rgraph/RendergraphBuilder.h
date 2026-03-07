@@ -53,6 +53,9 @@ namespace rgraph
         void AddColorAttachment(const std::string name, bool store, VkClearValue *clear = nullptr);
         void AddDepthStencilAttachment(const std::string name, bool store, VkClearValue *clear = nullptr);
 
+        // need a resolve target for MSAA
+        void AddResolveTarget(const std::string resolveColorImageName, std::string resolveDepthImageName);
+
         void CreatesBuffer(const std::string name, size_t size, VkBufferUsageFlags usages);
 
         void ReadsBuffer(const std::string name);
@@ -77,6 +80,10 @@ namespace rgraph
         // add depth attachment read, bool storeDepth, and a reference to the creating builder itself.
         PassImageWrite depthAttachment{};
         bool storeDepth;
+        bool bresolveColor = false;
+        bool bresolveDepth = false;
+        std::string resolveColorImageName;
+        std::string resolveDepthImageName;
     };
 
     struct PassExecution

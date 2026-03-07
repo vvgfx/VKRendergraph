@@ -48,8 +48,9 @@ void rgraph::PBRShadingFeature::Register(rgraph::RendergraphBuilder *builder)
         "renderPass",
         [](Pass &pass)
         {
-            pass.AddColorAttachment("drawImage", true);
-            pass.AddDepthStencilAttachment("depthImage", true);
+            pass.AddColorAttachment("msaaColor", true);
+            pass.AddDepthStencilAttachment("msaaDepth", true);
+            pass.AddResolveTarget("drawImage", "");
             pass.CreatesBuffer("gpuSceneBuffer", sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
             pass.CreatesBuffer("lightBuffer", sizeof(LightData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         },

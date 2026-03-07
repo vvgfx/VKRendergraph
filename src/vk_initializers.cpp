@@ -137,6 +137,30 @@ VkRenderingAttachmentInfo vkinit::attachment_info(VkImageView view, VkClearValue
 
     return colorAttachment;
 }
+
+VkRenderingAttachmentInfo vkinit::attachment_info(VkImageView view, VkClearValue *clear, VkImageLayout layout,
+                                                  VkImageView resolveImageView, VkImageLayout resolveImageLayout,
+                                                  VkResolveModeFlagBits resolveMode)
+{
+    VkRenderingAttachmentInfo colorAttachment{};
+    colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    colorAttachment.pNext = nullptr;
+
+    colorAttachment.imageView = view;
+    colorAttachment.imageLayout = layout;
+    colorAttachment.loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+    // resolution stuff - required for MSAA
+    colorAttachment.resolveMode = resolveMode;
+    colorAttachment.resolveImageLayout = resolveImageLayout;
+    colorAttachment.resolveImageView = resolveImageView;
+
+    if (clear)
+        colorAttachment.clearValue = *clear;
+
+    return colorAttachment;
+}
 //< color_info
 //> depth_info
 VkRenderingAttachmentInfo
@@ -151,6 +175,27 @@ vkinit::depth_attachment_info(VkImageView view, VkImageLayout layout /*= VK_IMAG
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     depthAttachment.clearValue.depthStencil.depth = 0.f;
+
+    return depthAttachment;
+}
+
+VkRenderingAttachmentInfo vkinit::depth_attachment_info(VkImageView view, VkImageLayout layout,
+                                                        VkImageView resolveImageView, VkImageLayout resolveImageLayout,
+                                                        VkResolveModeFlagBits resolveMode)
+{
+    VkRenderingAttachmentInfo depthAttachment{};
+    depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    depthAttachment.pNext = nullptr;
+
+    depthAttachment.imageView = view;
+    depthAttachment.imageLayout = layout;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    depthAttachment.clearValue.depthStencil.depth = 0.f;
+
+    depthAttachment.resolveMode = resolveMode;
+    depthAttachment.resolveImageLayout = resolveImageLayout;
+    depthAttachment.resolveImageView = resolveImageView;
 
     return depthAttachment;
 }
