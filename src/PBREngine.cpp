@@ -1,23 +1,15 @@
 #include "GPUResourceAllocator.h"
 #include "MaterialSystem.h"
-#include "fmt/base.h"
 #include "glm/ext/matrix_float4x4.hpp"
 #include "imgui.h"
 #include "rgraph/ComputeBackgroundFeature.h"
 #include "rgraph/PBRShadingFeature.h"
-#include "sgraph/Scenegraph.h"
-#include "sgraph/ScenegraphImporter.h"
-#include "sgraph/ScenegraphStructs.h"
 #include "vk_engine.h"
 #include "vk_images.h"
 #include "vk_initializers.h"
 #include "vk_loader.h"
-#include "vk_pipelines.h"
 #include "vk_types.h"
 #include <PBREngine.h>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
 #include <memory>
 
 void PBREngine::init()
@@ -25,7 +17,7 @@ void PBREngine::init()
 
     VulkanEngine::init();
 
-    std::string structurePath = {"../assets/sponza_pillarlight.glb"};
+    std::string structurePath = {"../assets/outpostWithLights3.glb"};
 
     GLTFCreatorData creatorData = {};
 
@@ -49,11 +41,12 @@ void PBREngine::init()
     // testRendergraph();
 
     VkExtent3D extent = {_windowExtent.width, _windowExtent.height, 1};
-    computeFeature = make_shared<rgraph::ComputeBackgroundFeature>(_device, _mainDeletionQueue, extent, _drawImage);
+    computeFeature =
+        std::make_shared<rgraph::ComputeBackgroundFeature>(_device, _mainDeletionQueue, extent, _drawImage);
     GLTFMRMaterialSystemCreateInfo msCreateInfo = {_device, _drawImage.imageFormat, _depthImage.imageFormat,
                                                    _gpuSceneDataDescriptorLayout};
-    PBRFeature = make_shared<rgraph::PBRShadingFeature>(mainDrawContext, _device, msCreateInfo, sceneData,
-                                                        _gpuSceneDataDescriptorLayout, _mainDeletionQueue);
+    PBRFeature = std::make_shared<rgraph::PBRShadingFeature>(mainDrawContext, _device, msCreateInfo, sceneData,
+                                                             _gpuSceneDataDescriptorLayout, _mainDeletionQueue);
     builder.AddTrackedImage("drawImage", VK_IMAGE_LAYOUT_UNDEFINED, _drawImage);
     builder.AddTrackedImage("depthImage", VK_IMAGE_LAYOUT_UNDEFINED, _depthImage);
     builder.setReqData(_device, _drawImage.imageExtent);
@@ -93,7 +86,8 @@ void PBREngine::init_default_data()
     sceneUniformData->colorFactors = glm::vec4{1, 1, 1, 1};
     sceneUniformData->metal_rough_factors = glm::vec4{1, 0.5, 0, 0};
 
-    _mainDeletionQueue.push_function([=, this]() { GPUResourceAllocator::GetInstance().destroy_buffer(materialConstants); });
+    _mainDeletionQueue.push_function([=, this]()
+                                     { GPUResourceAllocator::GetInstance().destroy_buffer(materialConstants); });
 
     materialResources.dataBuffer = materialConstants.buffer;
     materialResources.dataBufferOffset = 0;
@@ -185,11 +179,12 @@ void PBREngine::testRendergraph()
     // test image creation end ----------------------------------------------------------------------------------
 
     VkExtent3D extent = {_windowExtent.width, _windowExtent.height, 1};
-    computeFeature = make_shared<rgraph::ComputeBackgroundFeature>(_device, _mainDeletionQueue, extent, _drawImage);
+    computeFeature =
+        std::make_shared<rgraph::ComputeBackgroundFeature>(_device, _mainDeletionQueue, extent, _drawImage);
     GLTFMRMaterialSystemCreateInfo msCreateInfo = {_device, testDrawImage.imageFormat, testDepthImage.imageFormat,
                                                    _gpuSceneDataDescriptorLayout};
-    PBRFeature = make_shared<rgraph::PBRShadingFeature>(mainDrawContext, _device, msCreateInfo, sceneData,
-                                                        _gpuSceneDataDescriptorLayout, _mainDeletionQueue);
+    PBRFeature = std::make_shared<rgraph::PBRShadingFeature>(mainDrawContext, _device, msCreateInfo, sceneData,
+                                                             _gpuSceneDataDescriptorLayout, _mainDeletionQueue);
     builder.AddTrackedImage("drawImage", VK_IMAGE_LAYOUT_UNDEFINED, testDrawImage);
     builder.AddTrackedImage("depthImage", VK_IMAGE_LAYOUT_UNDEFINED, testDepthImage);
     builder.setReqData(_device, testDrawImage.imageExtent);

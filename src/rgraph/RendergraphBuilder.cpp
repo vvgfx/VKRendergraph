@@ -211,8 +211,7 @@ void rgraph::RendergraphBuilder::Run(FrameData &frameData)
         // Create buffers if required.
         PassExecution exec;
 
-
-        GPUResourceAllocator* gpuResourceAllocator = &GPUResourceAllocator::GetInstance();
+        GPUResourceAllocator *gpuResourceAllocator = &GPUResourceAllocator::GetInstance();
 
         // potential for memory aliasing here.
         if (pass.bufferCreations.size() > 0)
