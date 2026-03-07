@@ -47,6 +47,10 @@ void PBREngine::init()
                                                    _gpuSceneDataDescriptorLayout};
     PBRFeature = std::make_shared<rgraph::PBRShadingFeature>(mainDrawContext, _device, msCreateInfo, sceneData,
                                                              _gpuSceneDataDescriptorLayout, _mainDeletionQueue);
+
+    // create MSAA images. TODO: move these out somewhere later.
+    createMsaaImages();
+
     builder.AddTrackedImage("drawImage", VK_IMAGE_LAYOUT_UNDEFINED, _drawImage);
     builder.AddTrackedImage("depthImage", VK_IMAGE_LAYOUT_UNDEFINED, _depthImage);
     builder.setReqData(_device, _drawImage.imageExtent);
@@ -202,6 +206,65 @@ void PBREngine::testRendergraph()
 
     vkDestroyImageView(_device, testDepthImage.imageView, nullptr);
     _gpuResourceAllocator.destroy_image(testDepthImage.image, testDepthImage.allocation);
+}
+
+void PBREngine::createMsaaImages()
+{
+    VkExtent3D imageExtent = {_windowExtent.width, _windowExtent.height, 1};
+
+    msaaColor.imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+    msaaColor.imageExtent = imageExtent;
+
+    VkImageUsageFlags colorImageUses{};
+    colorImageUses |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    VkImageCreateInfo rimg_info =
+        vkinit::image_create_info(msaaColor.imageFormat, colorImageUses, imageExtent, VK_SAMPLE_COUNT_4_BIT);
+
+    // we want to allocate it from gpu local memory
+    VmaAllocationCreateInfo rimg_allocinfo = {};
+    rimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    rimg_allocinfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    // allocate and create the image
+    GPUResourceAllocator &_gpuResourceAllocator = GPUResourceAllocator::GetInstance();
+    _gpuResourceAllocator.create_image(&rimg_info, &rimg_allocinfo, &msaaColor.image, &msaaColor.allocation, nullptr);
+
+    // build a image-view for the draw image to use for rendering
+    VkImageViewCreateInfo rview_info =
+        vkinit::imageview_create_info(msaaColor.imageFormat, msaaColor.image, VK_IMAGE_ASPECT_COLOR_BIT);
+
+    VK_CHECK(vkCreateImageView(_device, &rview_info, nullptr, &msaaColor.imageView));
+
+    // Now creating the MSAA depth image.
+
+    msaaDepth.imageFormat = VK_FORMAT_D32_SFLOAT;
+    msaaDepth.imageExtent = imageExtent;
+    VkImageUsageFlags depthImageUsages{};
+    depthImageUsages |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    VkImageCreateInfo dimg_info =
+        vkinit::image_create_info(msaaDepth.imageFormat, depthImageUsages, imageExtent, VK_SAMPLE_COUNT_4_BIT);
+
+    // allocate and create the image
+    _gpuResourceAllocator.create_image(&dimg_info, &rimg_allocinfo, &msaaDepth.image, &msaaDepth.allocation, nullptr);
+
+    // build a image-view for the draw image to use for rendering
+    VkImageViewCreateInfo dview_info =
+        vkinit::imageview_create_info(msaaDepth.imageFormat, msaaDepth.image, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+    VK_CHECK(vkCreateImageView(_device, &dview_info, nullptr, &msaaDepth.imageView));
+
+    _mainDeletionQueue.push_function(
+        [=, this]()
+        {
+            auto _gpuResourceAllocator = GPUResourceAllocator::GetInstance();
+            vkDestroyImageView(_device, msaaColor.imageView, nullptr);
+            _gpuResourceAllocator.destroy_image(msaaColor.image, msaaColor.allocation);
+
+            vkDestroyImageView(_device, msaaDepth.imageView, nullptr);
+            _gpuResourceAllocator.destroy_image(msaaDepth.image, msaaDepth.allocation);
+        });
 }
 
 void PBREngine::draw()

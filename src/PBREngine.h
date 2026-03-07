@@ -36,5 +36,11 @@ class PBREngine : public VulkanEngine
     std::shared_ptr<rgraph::ComputeBackgroundFeature> computeFeature;
     std::shared_ptr<rgraph::PBRShadingFeature> PBRFeature;
 
+    // AllocatedImages for MSAA. TODO: Move these out later.
+    AllocatedImage msaaColor;
+    AllocatedImage msaaDepth;
+
     void testRendergraph();
+
+    void createMsaaImages();
 };
