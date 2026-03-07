@@ -174,12 +174,19 @@ void PipelineBuilder::set_multisampling_none()
 
 void PipelineBuilder::set_multisampling_4x()
 {
-    _multisampling.sampleShadingEnable = VK_FALSE; // This flag is for SSAA - we don't want that as it runs the fragment shader 4 times for each pixel.
+    _multisampling.sampleShadingEnable =
+        VK_FALSE; // This flag is for SSAA - we don't want that as it runs the fragment shader 4 times for each pixel.
     _multisampling.rasterizationSamples = VK_SAMPLE_COUNT_4_BIT;
     _multisampling.minSampleShading = 1.0f;
     _multisampling.pSampleMask = nullptr;
     _multisampling.alphaToCoverageEnable = VK_FALSE;
     _multisampling.alphaToOneEnable = VK_FALSE;
+}
+
+void PipelineBuilder::set_multisampling_custom(VkSampleCountFlagBits sampleCount)
+{
+    set_multisampling_none();
+    _multisampling.rasterizationSamples = sampleCount;
 }
 
 void PipelineBuilder::disable_blending()

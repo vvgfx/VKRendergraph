@@ -9,6 +9,12 @@
 #include <algorithm>
 #include <memory>
 
+// multisampling config ---------------------------
+
+VkSampleCountFlagBits rasterizationSamples = VK_SAMPLE_COUNT_4_BIT;
+
+// multisampling config ---------------------------
+
 // forward declaration for now, TODO: come back and move this function here. remove from VKEngine.
 bool is_visible(const RenderObject &obj, const glm::mat4 &viewproj);
 
@@ -48,8 +54,11 @@ void rgraph::PBRShadingFeature::Register(rgraph::RendergraphBuilder *builder)
         "renderPass",
         [](Pass &pass)
         {
-            pass.AddColorAttachment("msaaColor", true);
-            pass.AddDepthStencilAttachment("msaaDepth", true);
+            static VkClearValue colorClearValue{};
+            colorClearValue.color = {0.0f, 0.0f, 0.0f, 0.0f};
+            colorClearValue.depthStencil = {0.0f};
+            pass.AddColorAttachment("msaaColor", false, &colorClearValue);
+            pass.AddDepthStencilAttachment("msaaDepth", false, &colorClearValue);
             pass.AddResolveTarget("drawImage", "");
             pass.CreatesBuffer("gpuSceneBuffer", sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
             pass.CreatesBuffer("lightBuffer", sizeof(LightData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
@@ -235,7 +244,7 @@ void rgraph::PBRShadingFeature::createPipelines(GLTFMRMaterialSystemCreateInfo &
     pipelineBuilder.set_input_topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     pipelineBuilder.set_polygon_mode(VK_POLYGON_MODE_FILL);
     pipelineBuilder.set_cull_mode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-    pipelineBuilder.set_multisampling_4x();
+    pipelineBuilder.set_multisampling_custom(VK_SAMPLE_COUNT_4_BIT);
     pipelineBuilder.disable_blending();
     pipelineBuilder.enable_depthtest(true, VK_COMPARE_OP_GREATER_OR_EQUAL);
 

@@ -1,5 +1,4 @@
 #pragma once
-#include "GPUResourceAllocator.h"
 #include "vk_engine.h"
 #include "vk_types.h"
 #include <cstddef>
@@ -54,7 +53,10 @@ namespace rgraph
         void AddDepthStencilAttachment(const std::string name, bool store, VkClearValue *clear = nullptr);
 
         // need a resolve target for MSAA
-        void AddResolveTarget(const std::string resolveColorImageName, std::string resolveDepthImageName);
+        void AddResolveTarget(
+            const std::string resolveColorImageName, std::string resolveDepthImageName,
+            VkResolveModeFlagBits colorResolutionMode = VK_RESOLVE_MODE_AVERAGE_BIT,
+            VkResolveModeFlagBits depthResolutionMode = VK_RESOLVE_MODE_MAX_BIT); // using reverse-z, so MAX, not MIN
 
         void CreatesBuffer(const std::string name, size_t size, VkBufferUsageFlags usages);
 
@@ -84,6 +86,8 @@ namespace rgraph
         bool bresolveDepth = false;
         std::string resolveColorImageName;
         std::string resolveDepthImageName;
+        VkResolveModeFlagBits colorResolutionMode;
+        VkResolveModeFlagBits depthResolutionMode;
     };
 
     struct PassExecution
