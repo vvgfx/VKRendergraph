@@ -144,7 +144,7 @@ class VulkanEngine
     bool _isInitialized{false};
     int _frameNumber{0};
     bool stop_rendering{false};
-    VkExtent2D _windowExtent{1700, 900};
+    VkExtent2D _windowExtent{2560, 1440};
     VkInstance _instance;
     VkDebugUtilsMessengerEXT _debugMessenger;
     VkPhysicalDevice _chosenGPU;

@@ -25,7 +25,7 @@ void PBREngine::init()
 
     VulkanEngine::init();
 
-    std::string structurePath = {"../assets/outpostWithLights3.glb"};
+    std::string structurePath = {"../assets/sponza_pillarlight.glb"};
 
     GLTFCreatorData creatorData = {};
 

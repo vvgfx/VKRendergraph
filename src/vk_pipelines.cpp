@@ -1,6 +1,7 @@
 ﻿#include <fstream>
 #include <vk_initializers.h>
 #include <vk_pipelines.h>
+#include <vulkan/vulkan_core.h>
 
 bool vkutil::load_shader_module(const char *filePath, VkDevice device, VkShaderModule *outShaderModule)
 {
@@ -167,6 +168,16 @@ void PipelineBuilder::set_multisampling_none()
     _multisampling.minSampleShading = 1.0f;
     _multisampling.pSampleMask = nullptr;
     // no alpha to coverage either
+    _multisampling.alphaToCoverageEnable = VK_FALSE;
+    _multisampling.alphaToOneEnable = VK_FALSE;
+}
+
+void PipelineBuilder::set_multisampling_4x()
+{
+    _multisampling.sampleShadingEnable = VK_FALSE; // This flag is for SSAA - we don't want that as it runs the fragment shader 4 times for each pixel.
+    _multisampling.rasterizationSamples = VK_SAMPLE_COUNT_4_BIT;
+    _multisampling.minSampleShading = 1.0f;
+    _multisampling.pSampleMask = nullptr;
     _multisampling.alphaToCoverageEnable = VK_FALSE;
     _multisampling.alphaToOneEnable = VK_FALSE;
 }
