@@ -11,7 +11,7 @@
 
 // multisampling config ---------------------------
 
-VkSampleCountFlagBits rasterizationSamples = VK_SAMPLE_COUNT_4_BIT;
+VkSampleCountFlagBits rasterizationSamples = VK_SAMPLE_COUNT_8_BIT;
 
 // multisampling config ---------------------------
 
@@ -244,7 +244,7 @@ void rgraph::PBRShadingFeature::createPipelines(GLTFMRMaterialSystemCreateInfo &
     pipelineBuilder.set_input_topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     pipelineBuilder.set_polygon_mode(VK_POLYGON_MODE_FILL);
     pipelineBuilder.set_cull_mode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-    pipelineBuilder.set_multisampling_custom(VK_SAMPLE_COUNT_4_BIT);
+    pipelineBuilder.set_multisampling_custom(rasterizationSamples);
     pipelineBuilder.disable_blending();
     pipelineBuilder.enable_depthtest(true, VK_COMPARE_OP_GREATER_OR_EQUAL);
 
