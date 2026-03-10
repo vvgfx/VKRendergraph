@@ -113,12 +113,17 @@ void VulkanEngine::init_vulkan()
                                              .set_required_features_13(features)
                                              .set_required_features_12(features12)
                                              .set_surface(_surface)
+                                             .add_required_extension("VK_KHR_shader_relaxed_extended_instruction")
                                              .select()
                                              .value();
 
     vkb::DeviceBuilder DeviceBuilder{PhysicalDevice};
 
-    vkb::Device vkbDevice = DeviceBuilder.build().value();
+    VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR relaxedInstFeatures{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_RELAXED_EXTENDED_INSTRUCTION_FEATURES_KHR,
+        .shaderRelaxedExtendedInstruction = true};
+
+    vkb::Device vkbDevice = DeviceBuilder.add_pNext(&relaxedInstFeatures).build().value();
 
     _device = vkbDevice.device;
     _chosenGPU = PhysicalDevice.physical_device;
