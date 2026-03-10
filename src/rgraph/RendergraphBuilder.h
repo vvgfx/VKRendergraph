@@ -41,7 +41,7 @@ namespace rgraph
 
     struct Pass
     {
-        friend class RendergraphBuilder;
+        friend class Rendergraph;
 
         // these are for compute.
         void ReadsImage(const std::string name, VkImageLayout layout);
@@ -127,7 +127,7 @@ namespace rgraph
      * @brief This class builds the rendergraph, and is expected to be called every frame.
      *
      */
-    class RendergraphBuilder
+    class Rendergraph
     {
 
       public:

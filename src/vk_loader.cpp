@@ -20,8 +20,7 @@
 // forward declaration of global functions
 VkFilter extract_filter(fastgltf::Filter filter);
 VkSamplerMipmapMode extract_mipmap_mode(fastgltf::Filter filter);
-std::optional<AllocatedImage> load_image(fastgltf::Asset &asset,
-                                         fastgltf::Image &image);
+std::optional<AllocatedImage> load_image(fastgltf::Asset &asset, fastgltf::Image &image);
 
 std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creatorData, std::string_view filePath)
 {
@@ -152,9 +151,9 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
         }
     }
 
-    file.materialDataBuffer = gpuResourceAllocator.create_buffer(
-        sizeof(GLTFMRMaterialSystem::MaterialConstants) * gltf.materials.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-        VMA_MEMORY_USAGE_CPU_TO_GPU);
+    file.materialDataBuffer =
+        gpuResourceAllocator.create_buffer(sizeof(GLTFMRMaterialSystem::MaterialConstants) * gltf.materials.size(),
+                                           VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
     int data_index = 0;
     GLTFMRMaterialSystem::MaterialConstants *sceneMaterialConstants =
         (GLTFMRMaterialSystem::MaterialConstants *)file.materialDataBuffer.info.pMappedData;
@@ -475,8 +474,7 @@ VkSamplerMipmapMode extract_mipmap_mode(fastgltf::Filter filter)
     }
 }
 
-std::optional<AllocatedImage> load_image(fastgltf::Asset &asset,
-                                         fastgltf::Image &image)
+std::optional<AllocatedImage> load_image(fastgltf::Asset &asset, fastgltf::Image &image)
 {
     AllocatedImage newImage{};
 
@@ -504,7 +502,7 @@ std::optional<AllocatedImage> load_image(fastgltf::Asset &asset,
                     imagesize.depth = 1;
 
                     newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
-                                                                  VK_IMAGE_USAGE_SAMPLED_BIT, false);
+                                                                 VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
                     stbi_image_free(data);
                 }
@@ -522,7 +520,7 @@ std::optional<AllocatedImage> load_image(fastgltf::Asset &asset,
                     imagesize.depth = 1;
 
                     newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
-                                                                  VK_IMAGE_USAGE_SAMPLED_BIT, false);
+                                                                 VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
                     stbi_image_free(data);
                 }
@@ -551,7 +549,7 @@ std::optional<AllocatedImage> load_image(fastgltf::Asset &asset,
                                 imagesize.depth = 1;
 
                                 newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
-                                                                              VK_IMAGE_USAGE_SAMPLED_BIT, false);
+                                                                             VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
                                 stbi_image_free(data);
                             }
@@ -569,7 +567,7 @@ std::optional<AllocatedImage> load_image(fastgltf::Asset &asset,
                                 imagesize.depth = 1;
 
                                 newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
-                                                                              VK_IMAGE_USAGE_SAMPLED_BIT, false);
+                                                                             VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
                                 stbi_image_free(data);
                             }

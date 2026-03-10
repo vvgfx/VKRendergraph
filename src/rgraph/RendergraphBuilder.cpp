@@ -65,8 +65,8 @@ void rgraph::Pass::AddResolveTarget(std::string resolveColorImageName, std::stri
     }
 }
 
-void rgraph::RendergraphBuilder::AddComputePass(const std::string name, std::function<void(Pass &)> setup,
-                                                std::function<void(PassExecution &)> run)
+void rgraph::Rendergraph::AddComputePass(const std::string name, std::function<void(Pass &)> setup,
+                                         std::function<void(PassExecution &)> run)
 {
     rgraph::Pass pass;
     pass.type = PassType::Compute;
@@ -78,8 +78,8 @@ void rgraph::RendergraphBuilder::AddComputePass(const std::string name, std::fun
     executionLambdas.emplace_back(run);
 }
 
-void rgraph::RendergraphBuilder::AddGraphicsPass(const std::string name, std::function<void(Pass &)> setup,
-                                                 std::function<void(PassExecution &)> run)
+void rgraph::Rendergraph::AddGraphicsPass(const std::string name, std::function<void(Pass &)> setup,
+                                          std::function<void(PassExecution &)> run)
 {
     rgraph::Pass pass;
     pass.type = PassType::Graphics;
@@ -91,19 +91,18 @@ void rgraph::RendergraphBuilder::AddGraphicsPass(const std::string name, std::fu
     executionLambdas.emplace_back(run);
 }
 
-void rgraph::RendergraphBuilder::AddTrackedImage(const std::string name, VkImageLayout startLayout,
-                                                 AllocatedImage image)
+void rgraph::Rendergraph::AddTrackedImage(const std::string name, VkImageLayout startLayout, AllocatedImage image)
 {
     // I dont know why the startLayout is required, so ignoring it for now.
     images[name] = image;
 }
 
-void rgraph::RendergraphBuilder::AddTrackedBuffer(const std::string name, AllocatedBuffer buffer)
+void rgraph::Rendergraph::AddTrackedBuffer(const std::string name, AllocatedBuffer buffer)
 {
     buffers[name] = buffer;
 }
 
-void rgraph::RendergraphBuilder::Build(FrameData &frameData)
+void rgraph::Rendergraph::Build(FrameData &frameData)
 {
     // fmt::println("Build called");
     transitionData.clear();
@@ -189,7 +188,7 @@ void rgraph::RendergraphBuilder::Build(FrameData &frameData)
     }
 }
 
-void rgraph::RendergraphBuilder::Run(FrameData &frameData)
+void rgraph::Rendergraph::Run(FrameData &frameData)
 {
     // actually call the execution lambdas here.
     // Ideally this should already contain the transition stuff.
@@ -338,12 +337,12 @@ void rgraph::RendergraphBuilder::Run(FrameData &frameData)
     frameData.stats.CPUFrametime = elapsed.count() / 1000.f;
 }
 
-void rgraph::RendergraphBuilder::AddFeature(std::weak_ptr<IFeature> feature)
+void rgraph::Rendergraph::AddFeature(std::weak_ptr<IFeature> feature)
 {
     features.emplace_back(feature);
 }
 
-void rgraph::RendergraphBuilder::setReqData(VkDevice _device, VkExtent3D _extent)
+void rgraph::Rendergraph::setReqData(VkDevice _device, VkExtent3D _extent)
 {
     this->_device = _device;
     this->_extent = _extent;
@@ -369,7 +368,7 @@ void rgraph::Pass::WritesBuffer(const std::string name)
     // do nothing right now, not sure where these are used yet.
 }
 
-void rgraph::RendergraphBuilder::ReadTimestamps(FrameData &frameData)
+void rgraph::Rendergraph::ReadTimestamps(FrameData &frameData)
 {
     if (frameData.timestampCount == 0)
         return;

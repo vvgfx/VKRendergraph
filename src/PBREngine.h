@@ -32,7 +32,7 @@ class PBREngine : public VulkanEngine
     // gltf data
     std::unordered_map<std::string, std::shared_ptr<sgraph::GLTFScene>> loadedScenes;
 
-    rgraph::RendergraphBuilder builder;
+    rgraph::Rendergraph builder;
     std::shared_ptr<rgraph::ComputeBackgroundFeature> computeFeature;
     std::shared_ptr<rgraph::PBRShadingFeature> PBRFeature;
 

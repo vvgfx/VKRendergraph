@@ -15,6 +15,6 @@ namespace rgraph
          * @brief Register the feature with the rendergraph.
          *
          */
-        virtual void Register(RendergraphBuilder *builder) = 0;
+        virtual void Register(Rendergraph *builder) = 0;
     };
 } // namespace rgraph

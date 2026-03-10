@@ -116,7 +116,7 @@ void rgraph::ComputeBackgroundFeature::InitPipeline(VkDevice _device, DeletionQu
         });
 }
 
-void rgraph::ComputeBackgroundFeature::Register(rgraph::RendergraphBuilder *builder)
+void rgraph::ComputeBackgroundFeature::Register(rgraph::Rendergraph *builder)
 {
     builder->AddComputePass(
         "background-pass",

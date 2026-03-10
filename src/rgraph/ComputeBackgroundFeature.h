@@ -16,7 +16,7 @@ namespace rgraph
         ComputeBackgroundFeature(VkDevice _device, DeletionQueue &delQueue, VkExtent3D imageExtent,
                                  AllocatedImage drawImage);
 
-        void Register(RendergraphBuilder *builder) override;
+        void Register(Rendergraph *builder) override;
 
       private:
         void InitPipeline(VkDevice _device, DeletionQueue &delQueue);

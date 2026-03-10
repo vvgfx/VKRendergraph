@@ -540,8 +540,6 @@ void VulkanEngine::init_imgui()
 
     ImGui_ImplVulkan_Init(&init_info);
 
-    // ImGui_ImplVulkan_CreateFontsTexture(); // This seems to be no longer needed in the ImGUI API
-
     // add the destroy the imgui created structures
     _mainDeletionQueue.push_function(
         [=, this]()
@@ -708,29 +706,11 @@ void VulkanEngine::run()
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        // if (ImGui::Begin("background"))
-        // {
-        //     ImGui::SliderFloat("Render Scale", &renderScale, 0.3f, 1.f);
-        //     ComputeEffect &selected = backgroundEffects[currentBackgroundEffect];
-        //     ImGui::Text("Selected effect: %s", selected.name);
-
-        //     ImGui::SliderInt("Effect Index", &currentBackgroundEffect, 0, backgroundEffects.size() - 1);
-
-        //     ImGui::InputFloat4("data1", (float *)&selected.data.data1);
-        //     ImGui::InputFloat4("data2", (float *)&selected.data.data2);
-        //     ImGui::InputFloat4("data3", (float *)&selected.data.data3);
-        //     ImGui::InputFloat4("data4", (float *)&selected.data.data4);
-        // }
-        // ImGui::End();
-
         if (ImGui::Begin("Stats"))
         {
             ImGui::Text("Framerate: %.4f", 1 / lastCompleteStats.frameTime * 1000);
             ImGui::Text("frametime %.4f ms", lastCompleteStats.frameTime);
-            // ImGui::Text("draw time %f ms", stats.mesh_draw_time); // fix
             ImGui::Text("update time %.4f ms", lastCompleteStats.scene_update_time);
-            // ImGui::Text("triangles %i", stats.triangle_count); // fix
-            // ImGui::Text("draws %i", stats.drawcall_count);     // fix
         }
         ImGui::End();
 

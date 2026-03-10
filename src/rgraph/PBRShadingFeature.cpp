@@ -48,7 +48,7 @@ rgraph::PBRShadingFeature::PBRShadingFeature(DrawContext &drwCtx, VkDevice _devi
         });
 }
 
-void rgraph::PBRShadingFeature::Register(rgraph::RendergraphBuilder *builder)
+void rgraph::PBRShadingFeature::Register(rgraph::Rendergraph *builder)
 {
     builder->AddGraphicsPass(
         "renderPass",

@@ -21,7 +21,7 @@ namespace rgraph
                           GLTFMRMaterialSystemCreateInfo &materialSystemCreateInfo, GPUSceneData &sceneData,
                           VkDescriptorSetLayout gpuSceneLayout, DeletionQueue &delQueue);
 
-        void Register(RendergraphBuilder *builder) override;
+        void Register(Rendergraph *builder) override;
 
         std::shared_ptr<GLTFMRMaterialSystem> getMaterialSystemReference();
 
