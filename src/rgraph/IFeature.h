@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RendergraphBuilder.h"
+#include "Rendergraph.h"
 
 namespace rgraph
 {

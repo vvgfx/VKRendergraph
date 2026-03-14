@@ -1,6 +1,6 @@
 #include "PBRShadingFeature.h"
 #include "MaterialSystem.h"
-#include "RendergraphBuilder.h"
+#include "Rendergraph.h"
 #include "fmt/base.h"
 #include "vk_engine.h"
 #include "vk_initializers.h"

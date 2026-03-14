@@ -27,8 +27,8 @@ add_executable (engine
   PBREngine.h
   PBREngine.cpp
   rgraph/IFeature.h
-  rgraph/RendergraphBuilder.h
-  rgraph/RendergraphBuilder.cpp
+  rgraph/Rendergraph.h
+  rgraph/Rendergraph.cpp
   rgraph/PBRShadingFeature.h
   rgraph/PBRShadingFeature.cpp
   rgraph/ComputeBackgroundFeature.h

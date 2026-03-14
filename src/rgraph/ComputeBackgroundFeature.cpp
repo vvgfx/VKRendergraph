@@ -6,30 +6,6 @@
 rgraph::ComputeBackgroundFeature::ComputeBackgroundFeature(VkDevice _device, DeletionQueue &delQueue,
                                                            VkExtent3D imageExtent, AllocatedImage drawImage)
 {
-    // CREATE REQUIRED IMAGE
-
-    // Since I'm using a single draw image for all my passes, I'm not creating the draw image here, it will remain on
-    // vk_engine drawImage.imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT; drawImage.imageExtent = imageExtent;
-
-    // VkImageUsageFlags drawImageUsages{};
-    // drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    // drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    // drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
-    // drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-    // VkImageCreateInfo rimg_info = vkinit::image_create_info(drawImage.imageFormat, drawImageUsages, imageExtent);
-
-    // VmaAllocationCreateInfo rimg_allocinfo = {};
-    // rimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-    // rimg_allocinfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    // gpuResourceAllocator->create_image(&rimg_info, &rimg_allocinfo, &drawImage.image, &drawImage.allocation,
-    // nullptr);
-
-    // VkImageViewCreateInfo rview_info =
-    //     vkinit::imageview_create_info(drawImage.imageFormat, drawImage.image, VK_IMAGE_ASPECT_COLOR_BIT);
-
-    // VK_CHECK(vkCreateImageView(_device, &rview_info, nullptr, &drawImage.imageView));
 
     // CREATE DESCRIPTOR ALLOCATOR
     std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> sizes = {{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1}};
@@ -57,9 +33,6 @@ rgraph::ComputeBackgroundFeature::ComputeBackgroundFeature(VkDevice _device, Del
     delQueue.push_function(
         [_device, this]()
         {
-            // vkDestroyImageView(_device, drawImage.imageView, nullptr);
-            // gpuResourceAllocator->destroy_image(drawImage.image, drawImage.allocation);
-
             descriptorAllocator.destroy_pools(_device);
             vkDestroyDescriptorSetLayout(_device, descriptorLayout, nullptr);
         });
@@ -132,13 +105,6 @@ void rgraph::ComputeBackgroundFeature::Register(rgraph::Rendergraph *builder)
 void rgraph::ComputeBackgroundFeature::DrawBackground(rgraph::PassExecution &passExec)
 {
     vkCmdBindPipeline(passExec.cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
-
-    // DescriptorWriter writer;
-
-    // writer.write_image(0, passExec.allocatedImages["drawImage"].imageView, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_GENERAL,
-    //                    VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-
-    // writer.update_set(passExec._device, descriptorSet);
 
     // bind the descriptor set containing the draw image for the compute pipeline
     vkCmdBindDescriptorSets(passExec.cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, &descriptorSet, 0,

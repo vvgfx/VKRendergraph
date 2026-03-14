@@ -1,5 +1,4 @@
-﻿
-#include "GPUResourceAllocator.h"
+﻿#include "GPUResourceAllocator.h"
 #include "fastgltf/types.hpp"
 #include "fmt/base.h"
 #include "sgraph/ScenegraphStructs.h"

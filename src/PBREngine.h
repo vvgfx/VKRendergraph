@@ -3,7 +3,7 @@
 #include "MaterialSystem.h"
 #include "rgraph/ComputeBackgroundFeature.h"
 #include "rgraph/PBRShadingFeature.h"
-#include "rgraph/RendergraphBuilder.h"
+#include "rgraph/Rendergraph.h"
 #include <memory>
 #include <vk_descriptors.h>
 #include <vk_engine.h>

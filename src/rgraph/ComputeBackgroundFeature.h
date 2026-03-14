@@ -21,6 +21,7 @@ namespace rgraph
       private:
         void InitPipeline(VkDevice _device, DeletionQueue &delQueue);
         void DrawBackground(PassExecution &passExec);
+
         // variables required for the compute pass.
         VkPipeline pipeline;
         VkPipelineLayout pipelineLayout;
@@ -28,6 +29,5 @@ namespace rgraph
         VkDescriptorSet descriptorSet;
         ComputePushConstants data;
         DescriptorAllocatorGrowable descriptorAllocator;
-        // AllocatedImage drawImage; // this will be allocated by the engine for now. Ideally I want to fix this later.
     };
 } // namespace rgraph

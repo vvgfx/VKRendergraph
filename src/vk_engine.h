@@ -11,7 +11,6 @@
 #include <vk_loader.h>
 #include <vk_types.h>
 
-
 struct PassStats
 {
     std::string name;
@@ -249,7 +248,6 @@ class VulkanEngine
 
     // statistics
     EngineStats lastCompleteStats;
-
 
   protected:
     void init_vulkan();
