@@ -13,12 +13,11 @@
 #pragma clang diagnostic pop
 #endif
 
-GPUResourceAllocator* instance = nullptr;
-
+GPUResourceAllocator *GPUResourceAllocator::instance = nullptr;
 
 void GPUResourceAllocator::init(VmaAllocator &_allocator, VkDevice _device)
 {
-    if(!instance)
+    if (!instance)
     {
         instance = new GPUResourceAllocator();
         instance->_allocator = _allocator;
@@ -27,14 +26,14 @@ void GPUResourceAllocator::init(VmaAllocator &_allocator, VkDevice _device)
         return;
     }
 
-    throw ("GPUResourceAllocator is initialized more than once");
+    throw("GPUResourceAllocator is initialized more than once");
 }
 
-GPUResourceAllocator& GPUResourceAllocator::GetInstance()
+GPUResourceAllocator &GPUResourceAllocator::GetInstance()
 {
-    if(instance)
+    if (instance)
         return *instance;
-    throw ("GPUResourceAllocator was retrieved without initialization");
+    throw("GPUResourceAllocator was retrieved without initialization");
 }
 
 AllocatedBuffer GPUResourceAllocator::create_buffer(size_t allocSize, VkBufferUsageFlags usage,

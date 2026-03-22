@@ -9,7 +9,7 @@ class GPUResourceAllocator
   public:
     static void init(VmaAllocator &_allocator, VkDevice _device);
 
-    static GPUResourceAllocator& GetInstance();
+    static GPUResourceAllocator &GetInstance();
 
     GPUMeshBuffers uploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
 
@@ -34,4 +34,5 @@ class GPUResourceAllocator
     VmaAllocator _allocator;
     VkDevice _device;
     VulkanEngine *_engine;
+    static GPUResourceAllocator *instance;
 };

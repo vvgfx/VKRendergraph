@@ -164,7 +164,7 @@ void PBREngine::createMsaaImages()
     // allocate and create the image
     _gpuResourceAllocator.create_image(&dimg_info, &rimg_allocinfo, &msaaDepth.image, &msaaDepth.allocation, nullptr);
 
-    // build a image-view for the draw image to use for rendering
+    // build a image-view for the depth image to use for rendering
     VkImageViewCreateInfo dview_info =
         vkinit::imageview_create_info(msaaDepth.imageFormat, msaaDepth.image, VK_IMAGE_ASPECT_DEPTH_BIT);
 

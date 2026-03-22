@@ -1,7 +1,10 @@
+
 #include <vk_images.h>
 #include <vk_initializers.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+vkutil::BarrierMerger *vkutil::BarrierMerger::instance = nullptr;
 
 void vkutil::transition_image(VkCommandBuffer cmd, VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout)
 {
@@ -137,4 +140,62 @@ void vkutil::generate_mipmaps(VkCommandBuffer cmd, VkImage image, VkExtent2D ima
 
     // transition all mip levels into the final read_only layout
     transition_image(cmd, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+}
+
+vkutil::BarrierMerger &vkutil::BarrierMerger::GetInstance()
+{
+    return *instance;
+}
+
+vkutil::BarrierMerger::BarrierMerger()
+{
+    if (instance)
+        assert(false && "Barrier Merger instance always exists");
+
+    instance = this;
+    imgBarriers.reserve(MAX_IMAGE_BARRIERS); // closest I can get to eastl::fixed_vectors
+}
+
+void vkutil::BarrierMerger::transition_image(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout)
+{
+
+    if (imgBarriers.size() > MAX_IMAGE_BARRIERS)
+        assert(false && "max image barrier size reached!");
+    VkImageMemoryBarrier2 imageBarrier{.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
+    imageBarrier.pNext = nullptr;
+
+    imageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+    imageBarrier.srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
+    imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+    imageBarrier.dstAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT | VK_ACCESS_2_MEMORY_READ_BIT;
+
+    imageBarrier.oldLayout = currentLayout;
+    imageBarrier.newLayout = newLayout;
+
+    VkImageAspectFlags aspectMask =
+        (newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL)
+            ? VK_IMAGE_ASPECT_DEPTH_BIT
+            : VK_IMAGE_ASPECT_COLOR_BIT; // currently not using stencil buffers, so this fine.
+    imageBarrier.subresourceRange = vkinit::image_subresource_range(aspectMask);
+    imageBarrier.image = image;
+
+    imgBarriers.push_back(imageBarrier);
+}
+
+void vkutil::BarrierMerger::flushBarriers(VkCommandBuffer cmd)
+{
+    // this is assuming that flushing is done every pass!
+    if (imgBarriers.empty())
+        return;
+
+    VkDependencyInfo depInfo{};
+    depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+    depInfo.pNext = nullptr;
+
+    depInfo.imageMemoryBarrierCount = imgBarriers.size();
+    depInfo.pImageMemoryBarriers = imgBarriers.data();
+
+    vkCmdPipelineBarrier2(cmd, &depInfo);
+
+    imgBarriers.clear();
 }

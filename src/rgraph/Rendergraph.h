@@ -1,5 +1,6 @@
 #pragma once
 #include "vk_engine.h"
+#include "vk_images.h"
 #include "vk_types.h"
 #include <cstddef>
 #include <functional>
@@ -183,5 +184,7 @@ namespace rgraph
         std::vector<uint64_t> timestampBuffer;
         float timestampPeriod = 1.0f;
         float totalGpuMs = 0.0f;
+
+        vkutil::BarrierMerger barrierMerger;
     };
 } // namespace rgraph

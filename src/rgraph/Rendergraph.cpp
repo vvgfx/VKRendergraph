@@ -230,10 +230,11 @@ void rgraph::Rendergraph::Run(FrameData &frameData)
             for (const auto &transition : transitionsIt->second)
             {
                 AllocatedImage img = images[transition.imageName];
-                vkutil::transition_image(frameData._mainCommandBuffer, img.image, transition.currentLayout,
-                                         transition.newLayout);
+                barrierMerger.transition_image(img.image, transition.currentLayout, transition.newLayout);
             }
         }
+
+        barrierMerger.flushBarriers(frameData._mainCommandBuffer);
 
         // Create buffers if required.
         PassExecution exec;
