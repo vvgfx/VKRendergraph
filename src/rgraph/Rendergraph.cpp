@@ -1,7 +1,6 @@
 #include "Rendergraph.h"
 #include "GPUResourceAllocator.h"
 #include "IFeature.h"
-#include "fmt/base.h"
 #include "vk_engine.h"
 #include "vk_images.h"
 #include "vk_initializers.h"
@@ -104,7 +103,6 @@ void rgraph::Rendergraph::AddTrackedBuffer(const std::string name, AllocatedBuff
 
 void rgraph::Rendergraph::Build(FrameData &frameData)
 {
-    // fmt::println("Build called");
     transitionData.clear();
     passData.clear();
     executionLambdas.clear();

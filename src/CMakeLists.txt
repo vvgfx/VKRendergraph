@@ -29,10 +29,10 @@ add_executable (engine
   rgraph/IFeature.h
   rgraph/Rendergraph.h
   rgraph/Rendergraph.cpp
-  rgraph/PBRShadingFeature.h
-  rgraph/PBRShadingFeature.cpp
-  rgraph/ComputeBackgroundFeature.h
-  rgraph/ComputeBackgroundFeature.cpp
+  rgraph/features/PBRShadingFeature.h
+  rgraph/features/PBRShadingFeature.cpp
+  rgraph/features/ComputeBackgroundFeature.h
+  rgraph/features/ComputeBackgroundFeature.cpp
   MaterialSystem.h
   MaterialSystem.cpp
 )

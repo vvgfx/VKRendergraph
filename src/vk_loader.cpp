@@ -1,16 +1,14 @@
 ﻿#include "GPUResourceAllocator.h"
+#include "MaterialSystem.h"
 #include "fastgltf/types.hpp"
 #include "fmt/base.h"
 #include "sgraph/ScenegraphStructs.h"
 #include "stb_image.h"
+#include "vk_types.h"
+#include <glm/gtx/quaternion.hpp>
 #include <iostream>
 #include <memory>
 #include <vk_loader.h>
-
-#include "PBREngine.h"
-#include "vk_engine.h"
-#include "vk_types.h"
-#include <glm/gtx/quaternion.hpp>
 
 #include <fastgltf/core.hpp>
 #include <fastgltf/glm_element_traits.hpp>

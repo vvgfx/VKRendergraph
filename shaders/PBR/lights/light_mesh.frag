@@ -12,18 +12,6 @@ layout(location = 0) out vec4 outFragColor;
 
 const float PI = 3.14159265359;
 
-/** older code, removed to use PBR now.
-void main()
-{
-    int lightCount = lightData.numLights;
-    float lightValue = max(dot(inNormal, sceneData.sunlightDirection.xyz), 0.1f);
-
-    vec3 color = inColor * texture(colorTex, inUV).xyz;
-    vec3 ambient = color * sceneData.ambientColor.xyz;
-
-    outFragColor = vec4(color * lightValue * sceneData.sunlightColor.w + ambient, 1.0f);
-}
-*/
 // {{{ PBR utility functions first.
 // ----------------------------------------------------------------------------
 float DistributionGGX(vec3 N, vec3 H, float roughness)
@@ -93,7 +81,7 @@ void main()
     tempNormal = normalize(inNormal); // world space
     // if (!gl_FrontFacing)
     //     tempNormal = -tempNormal;
-    viewVec = (normalize(sceneData.cameraPos - inPos)).xyz;                    // world space.
+    viewVec = (normalize(sceneData.cameraPos - inPos)).xyz; // world space.
     vec3 albedo = pow(texture(colorTex, vec2(inUV.s, inUV.t)).rgb, vec3(2.2)); // conversion from sRGB
     // to linear space
     vec3 normal = tempNormal;
@@ -135,9 +123,6 @@ void main()
         kD *= 1.0 - metallic;
 
         nDotL = max(dot(normal, lightVec), 0.0f);
-        // nDotL = dot(normal, lightVec);
-        // if (nDotL < 0.0)
-        //     nDotL *= -1;
 
         Lo += (kD * albedo / PI + specular) * radiance * nDotL;
     }
@@ -147,13 +132,9 @@ void main()
     vec3 color = ambient + Lo;
 
     // HDR tonemapping
-    // color = color / (color + vec3(1.0));
     color = ACESFilm(color); // this tonemapping seems to preserve blacks better.
     // gamma correct
     color = pow(color, vec3(1.0 / 2.2));
 
     outFragColor = vec4(color, 1.0);
-
-    // float rawDot = dot(normal, lightVec);
-    // outFragColor = vec4(rawDot, -rawDot, 0.0, 1.0);
 }

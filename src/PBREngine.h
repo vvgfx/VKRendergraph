@@ -1,9 +1,9 @@
 #pragma once
 
 #include "MaterialSystem.h"
-#include "rgraph/ComputeBackgroundFeature.h"
-#include "rgraph/PBRShadingFeature.h"
 #include "rgraph/Rendergraph.h"
+#include "rgraph/features/ComputeBackgroundFeature.h"
+#include "rgraph/features/PBRShadingFeature.h"
 #include <memory>
 #include <vk_descriptors.h>
 #include <vk_engine.h>

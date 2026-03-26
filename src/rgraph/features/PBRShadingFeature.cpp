@@ -1,6 +1,6 @@
 #include "PBRShadingFeature.h"
+#include "../Rendergraph.h"
 #include "MaterialSystem.h"
-#include "Rendergraph.h"
 #include "fmt/base.h"
 #include "vk_engine.h"
 #include "vk_initializers.h"
@@ -196,7 +196,7 @@ void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
         vkCmdDrawIndexed(passExec.cmd, r.indexCount, 1, r.firstIndex, 0, 0);
         // stats
         passExec.drawCalls++;
-        passExec.triangles += r.indexCount / 3;
+        passExec.triangles += (int)(r.indexCount / 3);
     };
 
     for (auto &r : opaque_draws)
