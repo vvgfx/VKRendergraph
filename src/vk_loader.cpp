@@ -13,6 +13,7 @@
 #include <fastgltf/core.hpp>
 #include <fastgltf/glm_element_traits.hpp>
 #include <fastgltf/tools.hpp>
+#include <vulkan/vulkan_core.h>
 
 // forward declaration of global functions
 VkFilter extract_filter(fastgltf::Filter filter);
@@ -581,4 +582,26 @@ std::optional<AllocatedImage> load_image(fastgltf::Asset &asset, fastgltf::Image
         return {};
     else
         return newImage;
+}
+
+std::optional<std::shared_ptr<AllocatedImage>> loadImage(std::string fileName)
+{
+    int height, width, channels;
+    const auto &data = stbi_load(fileName.c_str(), &width, &height, &channels, 4);
+
+    if (data)
+    {
+        VkExtent3D imageSize;
+        imageSize.width = width;
+        imageSize.height = height;
+        imageSize.depth = 1;
+
+        AllocatedImage newImage{};
+
+        newImage = GPUResourceAllocator::GetInstance().create_image(data, imageSize, VK_FORMAT_R8G8B8A8_UNORM,
+                                                                    VK_IMAGE_USAGE_SAMPLED_BIT, false);
+        stbi_image_free(data);
+        return std::make_shared<AllocatedImage>(newImage);
+    }
+    return {};
 }

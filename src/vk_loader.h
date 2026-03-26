@@ -4,6 +4,7 @@
 #include "sgraph/ScenegraphStructs.h"
 #include "vk_descriptors.h"
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vk_types.h>
@@ -112,3 +113,5 @@ namespace sgraph
 } // namespace sgraph
 
 std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creatorData, std::string_view filePath);
+
+std::optional<std::shared_ptr<AllocatedImage>> loadImage(std::string fileName);
