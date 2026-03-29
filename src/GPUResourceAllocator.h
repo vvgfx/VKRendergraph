@@ -1,4 +1,5 @@
 #pragma once
+#include <span>
 #include <vk_mem_alloc.h>
 #include <vk_types.h>
 

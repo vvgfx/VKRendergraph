@@ -6,6 +6,7 @@
 #include <GPUResourceAllocator.h>
 #include <camera.h>
 #include <cstdint>
+#include <functional>
 #include <vector>
 #include <vk_descriptors.h>
 #include <vk_loader.h>
