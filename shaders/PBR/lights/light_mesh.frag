@@ -12,7 +12,6 @@ layout(location = 0) out vec4 outFragColor;
 
 const float PI = 3.14159265359;
 
-// {{{ PBR utility functions first.
 // ----------------------------------------------------------------------------
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -64,7 +63,6 @@ vec3 ACESFilm(vec3 x)
     return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
 }
 // ----------------------------------------------------------------------------
-// }}} PBR functions end.
 
 void main()
 {

@@ -1,6 +1,5 @@
 #pragma once
 #include "vk_descriptors.h"
-#include "vk_engine.h"
 #include "vk_types.h"
 
 struct GLTFMRMaterialSystemCreateInfo
@@ -25,6 +24,7 @@ struct GLTFMRMaterialSystem
         glm::vec4 extra[14];
     };
 
+    // All this data is written into a descriptor set. It is not stored on the CPU after loading.
     struct MaterialResources
     {
         AllocatedImage colorImage;

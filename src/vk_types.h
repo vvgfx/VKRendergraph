@@ -22,6 +22,7 @@
         }                                                                                                              \
     } while (0)
 
+// Represents a single image in the GPU
 struct AllocatedImage
 {
     VkImage image;
@@ -31,6 +32,7 @@ struct AllocatedImage
     VkFormat imageFormat;
 };
 
+// represents a single buffer in the GPU
 struct AllocatedBuffer
 {
     VkBuffer buffer;
@@ -38,9 +40,9 @@ struct AllocatedBuffer
     VmaAllocationInfo info;
 };
 
+// This is the per-vertex data structure on the CPU side. This must match whatever is on the GPU side (shaders)
 struct Vertex
 {
-
     glm::vec3 position;
     float uv_x;
     glm::vec3 normal;
@@ -48,12 +50,16 @@ struct Vertex
     glm::vec4 color;
 };
 
-// holds the resources needed for a mesh
+// holds the GPU resources of a mesh (Vertex buffer, Index Buffer and Vertex Buffer address)
+// To visualize, each of this will be the GPU-equivalent of one unique object in a blender scene.
 struct GPUMeshBuffers
 {
-
     AllocatedBuffer indexBuffer;
     AllocatedBuffer vertexBuffer;
+
+    // This holds the address of the vertex buffer. This is the same as RenderObject::vertexBufferAddress and is used in
+    // GPUPushConstants. We require the address of the vertex buffer because we directly reference it as a pointer in
+    // the shader via push constants.
     VkDeviceAddress vertexBufferAddress;
 };
 

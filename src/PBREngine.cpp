@@ -9,6 +9,7 @@
 #include "vk_loader.h"
 #include "vk_types.h"
 #include <PBREngine.h>
+#include <chrono>
 #include <memory>
 #include <vulkan/vulkan_core.h>
 
