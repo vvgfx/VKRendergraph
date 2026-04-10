@@ -9,7 +9,9 @@ bool vkutil::load_shader_module(const char *filePath, VkDevice device, VkShaderM
     std::ifstream file(filePath, std::ios::ate | std::ios::binary);
 
     if (!file.is_open())
+    {
         return false;
+    }
 
     // find what the size of the file is by looking up the location of the cursor
     // because the cursor is at the end, it gives the size directly in bytes
@@ -41,7 +43,9 @@ bool vkutil::load_shader_module(const char *filePath, VkDevice device, VkShaderM
     // check that the creation goes well.
     VkShaderModule shaderModule;
     if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+    {
         return false;
+    }
     *outShaderModule = shaderModule;
     return true;
 }
@@ -90,8 +94,7 @@ VkPipeline PipelineBuilder::build_pipeline(VkDevice device)
     colorBlending.pAttachments = &_colorBlendAttachment;
 
     // completely clear VertexInputStateCreateInfo, as we have no need for it
-    VkPipelineVertexInputStateCreateInfo _vertexInputInfo = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
+    VkPipelineVertexInputStateCreateInfo _vertexInputInfo = {.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
 
     // build the actual pipeline
     // we now use all of the info structs we have been writing into into this one
@@ -129,7 +132,9 @@ VkPipeline PipelineBuilder::build_pipeline(VkDevice device)
         return VK_NULL_HANDLE; // failed to create graphics pipeline
     }
     else
+    {
         return newPipeline;
+    }
 }
 
 void PipelineBuilder::set_shaders(VkShaderModule vertexShader, VkShaderModule fragmentShader)
@@ -192,8 +197,7 @@ void PipelineBuilder::set_multisampling_custom(VkSampleCountFlagBits sampleCount
 void PipelineBuilder::disable_blending()
 {
     // default write mask
-    _colorBlendAttachment.colorWriteMask =
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    _colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     // no blending
     _colorBlendAttachment.blendEnable = VK_FALSE;
 }
@@ -239,8 +243,7 @@ void PipelineBuilder::enable_depthtest(bool depthWriteEnable, VkCompareOp op)
 
 void PipelineBuilder::enable_blending_additive()
 {
-    _colorBlendAttachment.colorWriteMask =
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    _colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     _colorBlendAttachment.blendEnable = VK_TRUE;
     _colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     _colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
@@ -252,8 +255,7 @@ void PipelineBuilder::enable_blending_additive()
 
 void PipelineBuilder::enable_blending_alphablend()
 {
-    _colorBlendAttachment.colorWriteMask =
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    _colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     _colorBlendAttachment.blendEnable = VK_TRUE;
     _colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     _colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;

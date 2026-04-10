@@ -20,7 +20,9 @@ VkDescriptorSetLayout DescriptorLayoutBuilder::build(VkDevice device, VkShaderSt
                                                      VkDescriptorSetLayoutCreateFlags flags)
 {
     for (auto &b : bindings)
+    {
         b.stageFlags |= shaderStages;
+    }
 
     VkDescriptorSetLayoutCreateInfo info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
     info.pNext = pNext;
@@ -40,8 +42,7 @@ void DescriptorAllocator::init_pool(VkDevice device, uint32_t maxSets, std::span
     std::vector<VkDescriptorPoolSize> poolSizes;
     for (PoolSizeRatio ratio : poolRatios)
     {
-        poolSizes.push_back(
-            VkDescriptorPoolSize{.type = ratio.type, .descriptorCount = uint32_t(ratio.ratio * maxSets)});
+        poolSizes.push_back(VkDescriptorPoolSize{.type = ratio.type, .descriptorCount = uint32_t(ratio.ratio * maxSets)});
     }
 
     VkDescriptorPoolCreateInfo pool_info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
@@ -92,20 +93,20 @@ VkDescriptorPool DescriptorAllocatorGrowable::get_pool(VkDevice device)
 
         setsPerPool = setsPerPool * 1.5;
         if (setsPerPool > 4092)
+        {
             setsPerPool = 4092;
+        }
     }
 
     return newPool;
 }
 
-VkDescriptorPool DescriptorAllocatorGrowable::create_pool(VkDevice device, uint32_t setCount,
-                                                          std::span<PoolSizeRatio> poolRatios)
+VkDescriptorPool DescriptorAllocatorGrowable::create_pool(VkDevice device, uint32_t setCount, std::span<PoolSizeRatio> poolRatios)
 {
     std::vector<VkDescriptorPoolSize> poolSizes;
     for (PoolSizeRatio ratio : poolRatios)
     {
-        poolSizes.push_back(
-            VkDescriptorPoolSize{.type = ratio.type, .descriptorCount = uint32_t(ratio.ratio * setCount)});
+        poolSizes.push_back(VkDescriptorPoolSize{.type = ratio.type, .descriptorCount = uint32_t(ratio.ratio * setCount)});
     }
 
     VkDescriptorPoolCreateInfo pool_info = {};
@@ -125,7 +126,9 @@ void DescriptorAllocatorGrowable::init(VkDevice device, uint32_t maxSets, std::s
     ratios.clear();
 
     for (auto r : poolRatios)
+    {
         ratios.push_back(r);
+    }
 
     VkDescriptorPool newPool = create_pool(device, maxSets, poolRatios);
 
@@ -137,7 +140,9 @@ void DescriptorAllocatorGrowable::init(VkDevice device, uint32_t maxSets, std::s
 void DescriptorAllocatorGrowable::clear_pools(VkDevice device)
 {
     for (auto p : readyPools)
+    {
         vkResetDescriptorPool(device, p, 0);
+    }
     for (auto p : fullPools)
     {
         vkResetDescriptorPool(device, p, 0);
@@ -149,10 +154,14 @@ void DescriptorAllocatorGrowable::clear_pools(VkDevice device)
 void DescriptorAllocatorGrowable::destroy_pools(VkDevice device)
 {
     for (auto p : readyPools)
+    {
         vkDestroyDescriptorPool(device, p, nullptr);
+    }
     readyPools.clear();
     for (auto p : fullPools)
+    {
         vkDestroyDescriptorPool(device, p, nullptr);
+    }
     fullPools.clear();
 }
 
@@ -189,8 +198,7 @@ VkDescriptorSet DescriptorAllocatorGrowable::allocate(VkDevice device, VkDescrip
 
 void DescriptorWriter::write_buffer(int binding, VkBuffer buffer, size_t size, size_t offset, VkDescriptorType type)
 {
-    VkDescriptorBufferInfo &info =
-        bufferInfos.emplace_back(VkDescriptorBufferInfo{.buffer = buffer, .offset = offset, .range = size});
+    VkDescriptorBufferInfo &info = bufferInfos.emplace_back(VkDescriptorBufferInfo{.buffer = buffer, .offset = offset, .range = size});
 
     VkWriteDescriptorSet write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
 
@@ -203,11 +211,9 @@ void DescriptorWriter::write_buffer(int binding, VkBuffer buffer, size_t size, s
     writes.push_back(write);
 }
 
-void DescriptorWriter::write_image(int binding, VkImageView image, VkSampler sampler, VkImageLayout layout,
-                                   VkDescriptorType type)
+void DescriptorWriter::write_image(int binding, VkImageView image, VkSampler sampler, VkImageLayout layout, VkDescriptorType type)
 {
-    VkDescriptorImageInfo &info =
-        imageInfos.emplace_back(VkDescriptorImageInfo{.sampler = sampler, .imageView = image, .imageLayout = layout});
+    VkDescriptorImageInfo &info = imageInfos.emplace_back(VkDescriptorImageInfo{.sampler = sampler, .imageView = image, .imageLayout = layout});
 
     VkWriteDescriptorSet write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
 
@@ -230,7 +236,9 @@ void DescriptorWriter::clear()
 void DescriptorWriter::update_set(VkDevice device, VkDescriptorSet set)
 {
     for (VkWriteDescriptorSet &write : writes)
+    {
         write.dstSet = set;
+    }
 
     vkUpdateDescriptorSets(device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
 }

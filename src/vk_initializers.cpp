@@ -2,8 +2,7 @@
 #include <vulkan/vulkan_core.h>
 
 //> init_cmd
-VkCommandPoolCreateInfo vkinit::command_pool_create_info(uint32_t queueFamilyIndex,
-                                                         VkCommandPoolCreateFlags flags /*= 0*/)
+VkCommandPoolCreateInfo vkinit::command_pool_create_info(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags /*= 0*/)
 {
     VkCommandPoolCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -134,14 +133,15 @@ VkRenderingAttachmentInfo vkinit::attachment_info(VkImageView view, VkClearValue
     colorAttachment.loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     if (clear)
+    {
         colorAttachment.clearValue = *clear;
+    }
 
     return colorAttachment;
 }
 
-VkRenderingAttachmentInfo vkinit::attachment_info(VkImageView view, VkClearValue *clear, VkImageLayout layout,
-                                                  VkImageView resolveImageView, VkImageLayout resolveImageLayout,
-                                                  VkResolveModeFlagBits resolveMode)
+VkRenderingAttachmentInfo vkinit::attachment_info(VkImageView view, VkClearValue *clear, VkImageLayout layout, VkImageView resolveImageView,
+                                                  VkImageLayout resolveImageLayout, VkResolveModeFlagBits resolveMode)
 {
     VkRenderingAttachmentInfo colorAttachment{};
     colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -158,14 +158,15 @@ VkRenderingAttachmentInfo vkinit::attachment_info(VkImageView view, VkClearValue
     colorAttachment.resolveImageView = resolveImageView;
 
     if (clear)
+    {
         colorAttachment.clearValue = *clear;
+    }
 
     return colorAttachment;
 }
 //< color_info
 //> depth_info
-VkRenderingAttachmentInfo
-vkinit::depth_attachment_info(VkImageView view, VkImageLayout layout /*= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL*/)
+VkRenderingAttachmentInfo vkinit::depth_attachment_info(VkImageView view, VkImageLayout layout /*= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL*/)
 {
     VkRenderingAttachmentInfo depthAttachment{};
     depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -180,9 +181,8 @@ vkinit::depth_attachment_info(VkImageView view, VkImageLayout layout /*= VK_IMAG
     return depthAttachment;
 }
 
-VkRenderingAttachmentInfo vkinit::depth_attachment_info(VkImageView view, VkImageLayout layout,
-                                                        VkImageView resolveImageView, VkImageLayout resolveImageLayout,
-                                                        VkResolveModeFlagBits resolveMode)
+VkRenderingAttachmentInfo vkinit::depth_attachment_info(VkImageView view, VkImageLayout layout, VkImageView resolveImageView,
+                                                        VkImageLayout resolveImageLayout, VkResolveModeFlagBits resolveMode)
 {
     VkRenderingAttachmentInfo depthAttachment{};
     depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -218,8 +218,7 @@ VkRenderingInfo vkinit::rendering_info(VkExtent2D renderExtent, VkRenderingAttac
 
     return renderInfo;
 }
-VkRenderingInfo vkinit::rendering_info(VkExtent2D renderExtent,
-                                       std::vector<VkRenderingAttachmentInfo> *colorAttachments,
+VkRenderingInfo vkinit::rendering_info(VkExtent2D renderExtent, std::vector<VkRenderingAttachmentInfo> *colorAttachments,
                                        VkRenderingAttachmentInfo *depthAttachment)
 {
     VkRenderingInfo renderInfo{};
@@ -250,8 +249,7 @@ VkImageSubresourceRange vkinit::image_subresource_range(VkImageAspectFlags aspec
 }
 //< subresource
 
-VkDescriptorSetLayoutBinding vkinit::descriptorset_layout_binding(VkDescriptorType type, VkShaderStageFlags stageFlags,
-                                                                  uint32_t binding)
+VkDescriptorSetLayoutBinding vkinit::descriptorset_layout_binding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding)
 {
     VkDescriptorSetLayoutBinding setbind = {};
     setbind.binding = binding;
@@ -263,8 +261,7 @@ VkDescriptorSetLayoutBinding vkinit::descriptorset_layout_binding(VkDescriptorTy
     return setbind;
 }
 
-VkDescriptorSetLayoutCreateInfo vkinit::descriptorset_layout_create_info(VkDescriptorSetLayoutBinding *bindings,
-                                                                         uint32_t bindingCount)
+VkDescriptorSetLayoutCreateInfo vkinit::descriptorset_layout_create_info(VkDescriptorSetLayoutBinding *bindings, uint32_t bindingCount)
 {
     VkDescriptorSetLayoutCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -277,8 +274,7 @@ VkDescriptorSetLayoutCreateInfo vkinit::descriptorset_layout_create_info(VkDescr
     return info;
 }
 
-VkWriteDescriptorSet vkinit::write_descriptor_image(VkDescriptorType type, VkDescriptorSet dstSet,
-                                                    VkDescriptorImageInfo *imageInfo, uint32_t binding)
+VkWriteDescriptorSet vkinit::write_descriptor_image(VkDescriptorType type, VkDescriptorSet dstSet, VkDescriptorImageInfo *imageInfo, uint32_t binding)
 {
     VkWriteDescriptorSet write = {};
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -293,8 +289,8 @@ VkWriteDescriptorSet vkinit::write_descriptor_image(VkDescriptorType type, VkDes
     return write;
 }
 
-VkWriteDescriptorSet vkinit::write_descriptor_buffer(VkDescriptorType type, VkDescriptorSet dstSet,
-                                                     VkDescriptorBufferInfo *bufferInfo, uint32_t binding)
+VkWriteDescriptorSet vkinit::write_descriptor_buffer(VkDescriptorType type, VkDescriptorSet dstSet, VkDescriptorBufferInfo *bufferInfo,
+                                                     uint32_t binding)
 {
     VkWriteDescriptorSet write = {};
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -319,8 +315,7 @@ VkDescriptorBufferInfo vkinit::buffer_info(VkBuffer buffer, VkDeviceSize offset,
 }
 
 //> image_set
-VkImageCreateInfo vkinit::image_create_info(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent,
-                                            VkSampleCountFlagBits samples)
+VkImageCreateInfo vkinit::image_create_info(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent, VkSampleCountFlagBits samples)
 {
     VkImageCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -379,8 +374,7 @@ VkPipelineLayoutCreateInfo vkinit::pipeline_layout_create_info()
     return info;
 }
 
-VkPipelineShaderStageCreateInfo
-vkinit::pipeline_shader_stage_create_info(VkShaderStageFlagBits stage, VkShaderModule shaderModule, const char *entry)
+VkPipelineShaderStageCreateInfo vkinit::pipeline_shader_stage_create_info(VkShaderStageFlagBits stage, VkShaderModule shaderModule, const char *entry)
 {
     VkPipelineShaderStageCreateInfo info{};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

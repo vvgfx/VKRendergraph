@@ -130,10 +130,8 @@ namespace rgraph
     {
 
       public:
-        void AddComputePass(const std::string name, std::function<void(Pass &)> setup,
-                            std::function<void(PassExecution &)> run);
-        void AddGraphicsPass(const std::string name, std::function<void(Pass &)> setup,
-                             std::function<void(PassExecution &)> run);
+        void AddComputePass(const std::string name, std::function<void(Pass &)> setup, std::function<void(PassExecution &)> run);
+        void AddGraphicsPass(const std::string name, std::function<void(Pass &)> setup, std::function<void(PassExecution &)> run);
 
         void AddTrackedImage(const std::string name, VkImageLayout startLayout, AllocatedImage image);
         void AddTrackedBuffer(const std::string name, AllocatedBuffer buffer);

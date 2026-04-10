@@ -17,8 +17,7 @@ namespace rgraph
     class PBRShadingFeature : public IFeature
     {
       public:
-        PBRShadingFeature(DrawContext &drwCtx, VkDevice _device,
-                          GLTFMRMaterialSystemCreateInfo &materialSystemCreateInfo, GPUSceneData &sceneData,
+        PBRShadingFeature(DrawContext &drwCtx, VkDevice _device, GLTFMRMaterialSystemCreateInfo &materialSystemCreateInfo, GPUSceneData &sceneData,
                           VkDescriptorSetLayout gpuSceneLayout, DeletionQueue &delQueue);
 
         void Register(Rendergraph *builder) override;

@@ -35,15 +35,25 @@ namespace sgraph
             {
                 cout << "Read " << command << endl;
                 if (command == "gltf")
+                {
                     parseGLTF(inputWithOutComments);
+                }
                 else if (command == "add-child")
+                {
                     parseAddChild(inputWithOutComments);
+                }
                 else if (command == "node")
+                {
                     parseNode(inputWithOutComments);
+                }
                 else if (command == "root")
+                {
                     parseSetRoot(inputWithOutComments);
+                }
                 else
+                {
                     cout << "invalid command" << endl;
+                }
                 // could add meshnode here, but not doing so because all are imported via gltf only right now anyways.
             }
 

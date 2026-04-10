@@ -18,10 +18,8 @@ VkSampleCountFlagBits rasterizationSamples = VK_SAMPLE_COUNT_8_BIT;
 // forward declaration for now, TODO: come back and move this function here. remove from VKEngine.
 bool is_visible(const RenderObject &obj, const glm::mat4 &viewproj);
 
-rgraph::PBRShadingFeature::PBRShadingFeature(DrawContext &drwCtx, VkDevice _device,
-                                             GLTFMRMaterialSystemCreateInfo &materialSystemCreateInfo,
-                                             GPUSceneData &scnData, VkDescriptorSetLayout gpuSceneLayout,
-                                             DeletionQueue &delQueue)
+rgraph::PBRShadingFeature::PBRShadingFeature(DrawContext &drwCtx, VkDevice _device, GLTFMRMaterialSystemCreateInfo &materialSystemCreateInfo,
+                                             GPUSceneData &scnData, VkDescriptorSetLayout gpuSceneLayout, DeletionQueue &delQueue)
     : drawContext(drwCtx), sceneData(scnData)
 {
     _gpuSceneDataDescriptorLayout = gpuSceneLayout;
@@ -32,8 +30,7 @@ rgraph::PBRShadingFeature::PBRShadingFeature(DrawContext &drwCtx, VkDevice _devi
     {
         DescriptorLayoutBuilder layoutBuilder;
         layoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-        lightDescriptorSetLayout =
-            layoutBuilder.build(_device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+        lightDescriptorSetLayout = layoutBuilder.build(_device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
     }
 
     createPipelines(materialSystemCreateInfo);
@@ -81,8 +78,12 @@ void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
     opaque_draws.reserve(drawContext.OpaqueSurfaces.size());
 
     for (int i = 0; i < drawContext.OpaqueSurfaces.size(); i++)
+    {
         if (is_visible(drawContext.OpaqueSurfaces[i], sceneData.viewproj))
+        {
             opaque_draws.push_back(i);
+        }
+    }
 
     // sort the opaque surfaces by material and mesh
     std::sort(opaque_draws.begin(), opaque_draws.end(),
@@ -91,9 +92,13 @@ void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
                   const RenderObject &A = drawContext.OpaqueSurfaces[iA];
                   const RenderObject &B = drawContext.OpaqueSurfaces[iB];
                   if (A.material == B.material)
+                  {
                       return A.indexBuffer < B.indexBuffer;
+                  }
                   else
+                  {
                       return A.material < B.material;
+                  }
               });
 
     AllocatedBuffer gpuSceneDataBuffer = passExec.allocatedBuffers["gpuSceneBuffer"];
@@ -146,15 +151,13 @@ void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
             if (r.material->passType != lastPass)
             {
                 lastPass = r.material->passType;
-                lastPipeline = lastPass == MaterialPass::Transparent
-                                   ? &transparentPipeline
-                                   : &opaquePipeline; // change to use passtype instead of pipeline.
+                lastPipeline =
+                    lastPass == MaterialPass::Transparent ? &transparentPipeline : &opaquePipeline; // change to use passtype instead of pipeline.
 
                 VkDescriptorSet ds[] = {globalDescriptor, lightDescriptor};
 
                 vkCmdBindPipeline(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, lastPipeline->pipeline);
-                vkCmdBindDescriptorSets(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, lastPipeline->layout, 0, 2, ds,
-                                        0, nullptr);
+                vkCmdBindDescriptorSets(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, lastPipeline->layout, 0, 2, ds, 0, nullptr);
 
                 VkViewport viewport = {};
                 viewport.x = 0;
@@ -175,8 +178,7 @@ void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
                 vkCmdSetScissor(passExec.cmd, 0, 1, &scissor);
             }
 
-            vkCmdBindDescriptorSets(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, lastPipeline->layout, 2, 1,
-                                    &r.material->materialSet, 0, nullptr);
+            vkCmdBindDescriptorSets(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, lastPipeline->layout, 2, 1, &r.material->materialSet, 0, nullptr);
         }
         // rebind index buffer if needed
         if (r.indexBuffer != lastIndexBuffer)
@@ -189,8 +191,7 @@ void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
         push_constants.worldMatrix = r.transform;
         push_constants.vertexBuffer = r.vertexBufferAddress;
 
-        vkCmdPushConstants(passExec.cmd, lastPipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
-                           sizeof(GPUDrawPushConstants), &push_constants);
+        vkCmdPushConstants(passExec.cmd, lastPipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
 
         vkCmdDrawIndexed(passExec.cmd, r.indexCount, 1, r.firstIndex, 0, 0);
         // stats
@@ -199,21 +200,29 @@ void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
     };
 
     for (auto &r : opaque_draws)
+    {
         draw(drawContext.OpaqueSurfaces[r]);
+    }
 
     for (auto &r : drawContext.TransparentSurfaces)
+    {
         draw(r);
+    }
 }
 
 void rgraph::PBRShadingFeature::createPipelines(GLTFMRMaterialSystemCreateInfo &info)
 {
     VkShaderModule meshFragShader;
     if (!vkutil::load_shader_module("../shaders/light_mesh.frag.spv", info._device, &meshFragShader))
+    {
         fmt::println("Error when building the triangle fragment shader module\n");
+    }
 
     VkShaderModule meshVertexShader;
     if (!vkutil::load_shader_module("../shaders/light_mesh.vert.spv", info._device, &meshVertexShader))
+    {
         fmt::println("Error when building the triangle vertex shader module\n");
+    }
 
     VkPushConstantRange matrixRange{};
     matrixRange.offset = 0;

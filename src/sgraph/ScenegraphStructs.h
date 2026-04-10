@@ -31,14 +31,18 @@ namespace sgraph
         {
             worldTransform = parentMatrix * localTransform;
             for (auto c : children)
+            {
                 c->refreshTransform(worldTransform);
+            }
         }
 
         virtual void Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
         {
             // draw children
             for (auto &c : children)
+            {
                 c->Draw(topMatrix, ctx);
+            }
         }
     };
 

@@ -19,8 +19,7 @@ void vkutil::transition_image(VkCommandBuffer cmd, VkImage image, VkImageLayout 
     imageBarrier.oldLayout = currentLayout;
     imageBarrier.newLayout = newLayout;
 
-    VkImageAspectFlags aspectMask =
-        (newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+    VkImageAspectFlags aspectMask = (newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
     imageBarrier.subresourceRange = vkinit::image_subresource_range(aspectMask);
     imageBarrier.image = image;
 
@@ -34,8 +33,7 @@ void vkutil::transition_image(VkCommandBuffer cmd, VkImage image, VkImageLayout 
     vkCmdPipelineBarrier2(cmd, &depInfo);
 }
 
-void vkutil::copy_image_to_image(VkCommandBuffer cmd, VkImage source, VkImage destination, VkExtent2D srcSize,
-                                 VkExtent2D dstSize)
+void vkutil::copy_image_to_image(VkCommandBuffer cmd, VkImage source, VkImage destination, VkExtent2D srcSize, VkExtent2D dstSize)
 {
     VkImageBlit2 blitRegion{.sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr};
 
@@ -150,7 +148,9 @@ vkutil::BarrierMerger &vkutil::BarrierMerger::GetInstance()
 vkutil::BarrierMerger::BarrierMerger()
 {
     if (instance)
+    {
         assert(false && "Barrier Merger instance always exists");
+    }
 
     instance = this;
     imgBarriers.reserve(MAX_IMAGE_BARRIERS); // closest I can get to eastl::fixed_vectors
@@ -160,7 +160,9 @@ void vkutil::BarrierMerger::transition_image(VkImage image, VkImageLayout curren
 {
 
     if (imgBarriers.size() > MAX_IMAGE_BARRIERS)
+    {
         assert(false && "max image barrier size reached!");
+    }
     VkImageMemoryBarrier2 imageBarrier{.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
     imageBarrier.pNext = nullptr;
 
@@ -172,10 +174,9 @@ void vkutil::BarrierMerger::transition_image(VkImage image, VkImageLayout curren
     imageBarrier.oldLayout = currentLayout;
     imageBarrier.newLayout = newLayout;
 
-    VkImageAspectFlags aspectMask =
-        (newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL)
-            ? VK_IMAGE_ASPECT_DEPTH_BIT
-            : VK_IMAGE_ASPECT_COLOR_BIT; // currently not using stencil buffers, so this fine.
+    VkImageAspectFlags aspectMask = (newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL)
+                                        ? VK_IMAGE_ASPECT_DEPTH_BIT
+                                        : VK_IMAGE_ASPECT_COLOR_BIT; // currently not using stencil buffers, so this fine.
     imageBarrier.subresourceRange = vkinit::image_subresource_range(aspectMask);
     imageBarrier.image = image;
 
@@ -186,7 +187,9 @@ void vkutil::BarrierMerger::flushBarriers(VkCommandBuffer cmd)
 {
     // this is assuming that flushing is done every pass!
     if (imgBarriers.empty())
+    {
         return;
+    }
 
     VkDependencyInfo depInfo{};
     depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;

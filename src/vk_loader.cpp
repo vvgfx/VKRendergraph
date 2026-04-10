@@ -30,8 +30,8 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
 
     fastgltf::Parser parser(fastgltf::Extensions::KHR_lights_punctual);
 
-    constexpr auto gltfOptions = fastgltf::Options::DontRequireValidAssetMember | fastgltf::Options::AllowDouble |
-                                 fastgltf::Options::LoadExternalBuffers;
+    constexpr auto gltfOptions =
+        fastgltf::Options::DontRequireValidAssetMember | fastgltf::Options::AllowDouble | fastgltf::Options::LoadExternalBuffers;
 
     auto dataResult = fastgltf::GltfDataBuffer::FromPath(filePath);
     if (!dataResult)
@@ -78,9 +78,8 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
     }
 
     // we can estimate the descriptors we will need accurately
-    std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> sizes = {{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3},
-                                                                     {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3},
-                                                                     {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1}};
+    std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> sizes = {
+        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3}, {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1}};
 
     file.descriptorPool.init(creatorData._device, gltf.materials.size(), sizes);
 
@@ -149,9 +148,8 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
         }
     }
 
-    file.materialDataBuffer =
-        gpuResourceAllocator.create_buffer(sizeof(GLTFMRMaterialSystem::MaterialConstants) * gltf.materials.size(),
-                                           VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+    file.materialDataBuffer = gpuResourceAllocator.create_buffer(sizeof(GLTFMRMaterialSystem::MaterialConstants) * gltf.materials.size(),
+                                                                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
     int data_index = 0;
     GLTFMRMaterialSystem::MaterialConstants *sceneMaterialConstants =
         (GLTFMRMaterialSystem::MaterialConstants *)file.materialDataBuffer.info.pMappedData;
@@ -175,7 +173,9 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
 
         MaterialPass passType = MaterialPass::MainColor;
         if (mat.alphaMode == fastgltf::AlphaMode::Blend)
+        {
             passType = MaterialPass::Transparent;
+        }
 
         GLTFMRMaterialSystem::MaterialResources materialResources;
         // default the material textures
@@ -199,15 +199,13 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
         if (mat.pbrData.metallicRoughnessTexture.has_value())
         {
             size_t img = gltf.textures[mat.pbrData.metallicRoughnessTexture.value().textureIndex].imageIndex.value();
-            size_t sampler =
-                gltf.textures[mat.pbrData.metallicRoughnessTexture.value().textureIndex].samplerIndex.value();
+            size_t sampler = gltf.textures[mat.pbrData.metallicRoughnessTexture.value().textureIndex].samplerIndex.value();
 
             materialResources.metalRoughImage = images[img];
             materialResources.metalRoughSampler = file.samplers[sampler];
         }
         // build material
-        newMat->data = creatorData.materialSystemReference->write_material(creatorData._device, passType,
-                                                                           materialResources, file.descriptorPool);
+        newMat->data = creatorData.materialSystemReference->write_material(creatorData._device, passType, materialResources, file.descriptorPool);
 
         data_index++;
     }
@@ -241,8 +239,7 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
                 fastgltf::Accessor &indexaccessor = gltf.accessors[p.indicesAccessor.value()];
                 indices.reserve(indices.size() + indexaccessor.count);
 
-                fastgltf::iterateAccessor<std::uint32_t>(gltf, indexaccessor, [&](std::uint32_t idx)
-                                                         { indices.push_back(idx + initial_vtx); });
+                fastgltf::iterateAccessor<std::uint32_t>(gltf, indexaccessor, [&](std::uint32_t idx) { indices.push_back(idx + initial_vtx); });
             }
 
             // load vertex positions
@@ -269,8 +266,7 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
             {
 
                 fastgltf::iterateAccessorWithIndex<glm::vec3>(gltf, gltf.accessors[(*normals).accessorIndex],
-                                                              [&](glm::vec3 v, size_t index)
-                                                              { vertices[initial_vtx + index].normal = v; });
+                                                              [&](glm::vec3 v, size_t index) { vertices[initial_vtx + index].normal = v; });
             }
 
             // load UVs
@@ -294,21 +290,23 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
                 if (accessor.type == fastgltf::AccessorType::Vec4)
                 {
                     fastgltf::iterateAccessorWithIndex<glm::vec4>(gltf, gltf.accessors[(*colors).accessorIndex],
-                                                                  [&](glm::vec4 v, size_t index)
-                                                                  { vertices[initial_vtx + index].color = v; });
+                                                                  [&](glm::vec4 v, size_t index) { vertices[initial_vtx + index].color = v; });
                 }
                 else if (accessor.type == fastgltf::AccessorType::Vec3)
                 {
-                    fastgltf::iterateAccessorWithIndex<glm::vec3>(
-                        gltf, gltf.accessors[(*colors).accessorIndex],
-                        [&](glm::vec3 v, size_t index) { vertices[initial_vtx + index].color = glm::vec4(v, 1.0f); });
+                    fastgltf::iterateAccessorWithIndex<glm::vec3>(gltf, gltf.accessors[(*colors).accessorIndex], [&](glm::vec3 v, size_t index)
+                                                                  { vertices[initial_vtx + index].color = glm::vec4(v, 1.0f); });
                 }
             }
 
             if (p.materialIndex.has_value())
+            {
                 newSurface.material = materials[p.materialIndex.value()];
+            }
             else
+            {
                 newSurface.material = materials[0];
+            }
 
             // loop the vertices of this surface, find min/max bounds
             glm::vec3 minpos = vertices[initial_vtx].position;
@@ -355,14 +353,11 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
         nodes.push_back(newNode);
         file.nodes[node.name.c_str()];
 
-        std::visit(fastgltf::visitor{[&](fastgltf::math::fmat4x4 matrix)
-                                     { memcpy(&newNode->localTransform, matrix.data(), sizeof(matrix)); },
+        std::visit(fastgltf::visitor{[&](fastgltf::math::fmat4x4 matrix) { memcpy(&newNode->localTransform, matrix.data(), sizeof(matrix)); },
                                      [&](fastgltf::TRS transform)
                                      {
-                                         glm::vec3 tl(transform.translation[0], transform.translation[1],
-                                                      transform.translation[2]);
-                                         glm::quat rot(transform.rotation[3], transform.rotation[0],
-                                                       transform.rotation[1], transform.rotation[2]);
+                                         glm::vec3 tl(transform.translation[0], transform.translation[1], transform.translation[2]);
+                                         glm::quat rot(transform.rotation[3], transform.rotation[0], transform.rotation[1], transform.rotation[2]);
                                          glm::vec3 sc(transform.scale[0], transform.scale[1], transform.scale[2]);
 
                                          glm::mat4 tm = glm::translate(glm::mat4(1.f), tl);
@@ -404,7 +399,9 @@ void sgraph::GLTFScene::Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
 {
     // create renderables from the scenenodes
     for (auto &n : topNodes)
+    {
         n->Draw(topMatrix, ctx);
+    }
 }
 
 void sgraph::GLTFScene::clearAll()
@@ -435,7 +432,9 @@ void sgraph::GLTFScene::clearAll()
     }
 
     for (auto &sampler : samplers)
+    {
         vkDestroySampler(dv, sampler, nullptr);
+    }
 }
 
 VkFilter extract_filter(fastgltf::Filter filter)
@@ -499,17 +498,15 @@ std::optional<AllocatedImage> load_image(fastgltf::Asset &asset, fastgltf::Image
                     imagesize.height = height;
                     imagesize.depth = 1;
 
-                    newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
-                                                                 VK_IMAGE_USAGE_SAMPLED_BIT, false);
+                    newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
                     stbi_image_free(data);
                 }
             },
             [&](fastgltf::sources::Vector &vector)
             {
-                unsigned char *data =
-                    stbi_load_from_memory(reinterpret_cast<const unsigned char *>(vector.bytes.data()),
-                                          static_cast<int>(vector.bytes.size()), &width, &height, &nrChannels, 4);
+                unsigned char *data = stbi_load_from_memory(reinterpret_cast<const unsigned char *>(vector.bytes.data()),
+                                                            static_cast<int>(vector.bytes.size()), &width, &height, &nrChannels, 4);
                 if (data)
                 {
                     VkExtent3D imagesize;
@@ -517,8 +514,7 @@ std::optional<AllocatedImage> load_image(fastgltf::Asset &asset, fastgltf::Image
                     imagesize.height = height;
                     imagesize.depth = 1;
 
-                    newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
-                                                                 VK_IMAGE_USAGE_SAMPLED_BIT, false);
+                    newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
                     stbi_image_free(data);
                 }
@@ -536,9 +532,9 @@ std::optional<AllocatedImage> load_image(fastgltf::Asset &asset, fastgltf::Image
                         [](auto &arg) {},
                         [&](fastgltf::sources::Vector &vector)
                         {
-                            unsigned char *data = stbi_load_from_memory(
-                                reinterpret_cast<const unsigned char *>(vector.bytes.data()) + bufferView.byteOffset,
-                                static_cast<int>(bufferView.byteLength), &width, &height, &nrChannels, 4);
+                            unsigned char *data =
+                                stbi_load_from_memory(reinterpret_cast<const unsigned char *>(vector.bytes.data()) + bufferView.byteOffset,
+                                                      static_cast<int>(bufferView.byteLength), &width, &height, &nrChannels, 4);
                             if (data)
                             {
                                 VkExtent3D imagesize;
@@ -546,17 +542,17 @@ std::optional<AllocatedImage> load_image(fastgltf::Asset &asset, fastgltf::Image
                                 imagesize.height = height;
                                 imagesize.depth = 1;
 
-                                newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
-                                                                             VK_IMAGE_USAGE_SAMPLED_BIT, false);
+                                newImage =
+                                    gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
                                 stbi_image_free(data);
                             }
                         },
                         [&](fastgltf::sources::Array &array) // Added this case for newer fastgltf!
                         {
-                            unsigned char *data = stbi_load_from_memory(
-                                reinterpret_cast<const unsigned char *>(array.bytes.data()) + bufferView.byteOffset,
-                                static_cast<int>(bufferView.byteLength), &width, &height, &nrChannels, 4);
+                            unsigned char *data =
+                                stbi_load_from_memory(reinterpret_cast<const unsigned char *>(array.bytes.data()) + bufferView.byteOffset,
+                                                      static_cast<int>(bufferView.byteLength), &width, &height, &nrChannels, 4);
                             if (data)
                             {
                                 VkExtent3D imagesize;
@@ -564,8 +560,8 @@ std::optional<AllocatedImage> load_image(fastgltf::Asset &asset, fastgltf::Image
                                 imagesize.height = height;
                                 imagesize.depth = 1;
 
-                                newImage = gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM,
-                                                                             VK_IMAGE_USAGE_SAMPLED_BIT, false);
+                                newImage =
+                                    gpuResourceAllocator.create_image(data, imagesize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, false);
 
                                 stbi_image_free(data);
                             }
@@ -579,9 +575,13 @@ std::optional<AllocatedImage> load_image(fastgltf::Asset &asset, fastgltf::Image
     // if any of the attempts to load the data failed, we havent written the image
     // so handle is null
     if (newImage.image == VK_NULL_HANDLE)
+    {
         return {};
+    }
     else
+    {
         return newImage;
+    }
 }
 
 std::optional<std::shared_ptr<AllocatedImage>> loadImage(std::string fileName)
@@ -598,8 +598,7 @@ std::optional<std::shared_ptr<AllocatedImage>> loadImage(std::string fileName)
 
         AllocatedImage newImage{};
 
-        newImage = GPUResourceAllocator::GetInstance().create_image(data, imageSize, VK_FORMAT_R8G8B8A8_UNORM,
-                                                                    VK_IMAGE_USAGE_SAMPLED_BIT, false);
+        newImage = GPUResourceAllocator::GetInstance().create_image(data, imageSize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, false);
         stbi_image_free(data);
         return std::make_shared<AllocatedImage>(newImage);
     }

@@ -3,8 +3,8 @@
 #include "vk_pipelines.h"
 #include "vk_types.h"
 
-rgraph::ComputeBackgroundFeature::ComputeBackgroundFeature(VkDevice _device, DeletionQueue &delQueue,
-                                                           VkExtent3D imageExtent, AllocatedImage drawImage)
+rgraph::ComputeBackgroundFeature::ComputeBackgroundFeature(VkDevice _device, DeletionQueue &delQueue, VkExtent3D imageExtent,
+                                                           AllocatedImage drawImage)
 {
 
     // CREATE DESCRIPTOR ALLOCATOR
@@ -21,8 +21,7 @@ rgraph::ComputeBackgroundFeature::ComputeBackgroundFeature(VkDevice _device, Del
     descriptorSet = descriptorAllocator.allocate(_device, descriptorLayout);
 
     DescriptorWriter writer;
-    writer.write_image(0, drawImage.imageView, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_GENERAL,
-                       VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+    writer.write_image(0, drawImage.imageView, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
 
     writer.update_set(_device, descriptorSet);
 
@@ -58,7 +57,9 @@ void rgraph::ComputeBackgroundFeature::InitPipeline(VkDevice _device, DeletionQu
 
     VkShaderModule skyShader;
     if (!vkutil::load_shader_module("../shaders/sky.comp.spv", _device, &skyShader))
+    {
         fmt::print("Error when building the compute shader \n");
+    }
 
     VkPipelineShaderStageCreateInfo stageinfo{};
     stageinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -107,16 +108,12 @@ void rgraph::ComputeBackgroundFeature::DrawBackground(rgraph::PassExecution &pas
     vkCmdBindPipeline(passExec.cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
 
     // bind the descriptor set containing the draw image for the compute pipeline
-    vkCmdBindDescriptorSets(passExec.cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, &descriptorSet, 0,
-                            nullptr);
+    vkCmdBindDescriptorSets(passExec.cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
-    vkCmdPushConstants(passExec.cmd, pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants),
-                       &data);
+    vkCmdPushConstants(passExec.cmd, pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &data);
 
     // execute the compute pipeline dispatch. We are using 16x16 workgroup size so we need to divide by it
-    vkCmdDispatch(passExec.cmd, std::ceil(passExec._drawExtent.width / 16.0),
-                  std::ceil(passExec._drawExtent.height / 16.0), 1);
+    vkCmdDispatch(passExec.cmd, std::ceil(passExec._drawExtent.width / 16.0), std::ceil(passExec._drawExtent.height / 16.0), 1);
 
-    passExec.dispatchCalls =
-        std::ceil(passExec._drawExtent.width / 16.0) * std::ceil(passExec._drawExtent.height / 16.0) * 1;
+    passExec.dispatchCalls = std::ceil(passExec._drawExtent.width / 16.0) * std::ceil(passExec._drawExtent.height / 16.0) * 1;
 }

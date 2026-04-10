@@ -26,8 +26,7 @@ void PBREngine::init()
     creatorData.defaultImage = _whiteImage;
     creatorData.loadErrorImage = _errorCheckerboardImage;
     creatorData._device = _device;
-    creatorData.materialSystemReference =
-        &materialSystemInstance; // this would change to a reference from the material system in PBRShadingFeature.
+    creatorData.materialSystemReference = &materialSystemInstance; // this would change to a reference from the material system in PBRShadingFeature.
 
     // this is called after the pipelines are initialzed.
     auto structureFile = loadGltf(creatorData, structurePath);
@@ -39,12 +38,10 @@ void PBREngine::init()
     structureFile.value()->name = "outpost";
 
     VkExtent3D extent = {_windowExtent.width, _windowExtent.height, 1};
-    computeFeature =
-        std::make_shared<rgraph::ComputeBackgroundFeature>(_device, _mainDeletionQueue, extent, _drawImage);
-    GLTFMRMaterialSystemCreateInfo msCreateInfo = {_device, _drawImage.imageFormat, _depthImage.imageFormat,
-                                                   _gpuSceneDataDescriptorLayout};
-    PBRFeature = std::make_shared<rgraph::PBRShadingFeature>(mainDrawContext, _device, msCreateInfo, sceneData,
-                                                             _gpuSceneDataDescriptorLayout, _mainDeletionQueue);
+    computeFeature = std::make_shared<rgraph::ComputeBackgroundFeature>(_device, _mainDeletionQueue, extent, _drawImage);
+    GLTFMRMaterialSystemCreateInfo msCreateInfo = {_device, _drawImage.imageFormat, _depthImage.imageFormat, _gpuSceneDataDescriptorLayout};
+    PBRFeature = std::make_shared<rgraph::PBRShadingFeature>(mainDrawContext, _device, msCreateInfo, sceneData, _gpuSceneDataDescriptorLayout,
+                                                             _mainDeletionQueue);
 
     // create MSAA images. TODO: move these out somewhere later.
     createMsaaImages();
@@ -81,24 +78,20 @@ void PBREngine::init_default_data()
 
     GPUResourceAllocator _gpuResourceAllocator = GPUResourceAllocator::GetInstance();
     // set the uniform buffer for the material data
-    AllocatedBuffer materialConstants =
-        _gpuResourceAllocator.create_buffer(sizeof(GLTFMRMaterialSystem::MaterialConstants),
-                                            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+    AllocatedBuffer materialConstants = _gpuResourceAllocator.create_buffer(sizeof(GLTFMRMaterialSystem::MaterialConstants),
+                                                                            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
     // write the buffer
-    GLTFMRMaterialSystem::MaterialConstants *sceneUniformData =
-        (GLTFMRMaterialSystem::MaterialConstants *)materialConstants.info.pMappedData;
+    GLTFMRMaterialSystem::MaterialConstants *sceneUniformData = (GLTFMRMaterialSystem::MaterialConstants *)materialConstants.info.pMappedData;
     sceneUniformData->colorFactors = glm::vec4{1, 1, 1, 1};
     sceneUniformData->metal_rough_factors = glm::vec4{1, 0.5, 0, 0};
 
-    _mainDeletionQueue.push_function([=, this]()
-                                     { GPUResourceAllocator::GetInstance().destroy_buffer(materialConstants); });
+    _mainDeletionQueue.push_function([=, this]() { GPUResourceAllocator::GetInstance().destroy_buffer(materialConstants); });
 
     materialResources.dataBuffer = materialConstants.buffer;
     materialResources.dataBufferOffset = 0;
 
-    defaultData = materialSystemInstance.write_material(_device, MaterialPass::MainColor, materialResources,
-                                                        globalDescriptorAllocator);
+    defaultData = materialSystemInstance.write_material(_device, MaterialPass::MainColor, materialResources, globalDescriptorAllocator);
 }
 
 void PBREngine::cleanupOnChildren()
@@ -133,8 +126,7 @@ void PBREngine::createMsaaImages()
     VkImageUsageFlags colorImageUses{};
     colorImageUses |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    VkImageCreateInfo rimg_info =
-        vkinit::image_create_info(msaaColor.imageFormat, colorImageUses, imageExtent, VK_SAMPLE_COUNT_8_BIT);
+    VkImageCreateInfo rimg_info = vkinit::image_create_info(msaaColor.imageFormat, colorImageUses, imageExtent, VK_SAMPLE_COUNT_8_BIT);
 
     // we want to allocate it from gpu local memory
     VmaAllocationCreateInfo rimg_allocinfo = {};
@@ -146,8 +138,7 @@ void PBREngine::createMsaaImages()
     _gpuResourceAllocator.create_image(&rimg_info, &rimg_allocinfo, &msaaColor.image, &msaaColor.allocation, nullptr);
 
     // build a image-view for the draw image to use for rendering
-    VkImageViewCreateInfo rview_info =
-        vkinit::imageview_create_info(msaaColor.imageFormat, msaaColor.image, VK_IMAGE_ASPECT_COLOR_BIT);
+    VkImageViewCreateInfo rview_info = vkinit::imageview_create_info(msaaColor.imageFormat, msaaColor.image, VK_IMAGE_ASPECT_COLOR_BIT);
 
     VK_CHECK(vkCreateImageView(_device, &rview_info, nullptr, &msaaColor.imageView));
 
@@ -158,15 +149,13 @@ void PBREngine::createMsaaImages()
     VkImageUsageFlags depthImageUsages{};
     depthImageUsages |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-    VkImageCreateInfo dimg_info =
-        vkinit::image_create_info(msaaDepth.imageFormat, depthImageUsages, imageExtent, VK_SAMPLE_COUNT_8_BIT);
+    VkImageCreateInfo dimg_info = vkinit::image_create_info(msaaDepth.imageFormat, depthImageUsages, imageExtent, VK_SAMPLE_COUNT_8_BIT);
 
     // allocate and create the image
     _gpuResourceAllocator.create_image(&dimg_info, &rimg_allocinfo, &msaaDepth.image, &msaaDepth.allocation, nullptr);
 
     // build a image-view for the depth image to use for rendering
-    VkImageViewCreateInfo dview_info =
-        vkinit::imageview_create_info(msaaDepth.imageFormat, msaaDepth.image, VK_IMAGE_ASPECT_DEPTH_BIT);
+    VkImageViewCreateInfo dview_info = vkinit::imageview_create_info(msaaDepth.imageFormat, msaaDepth.image, VK_IMAGE_ASPECT_DEPTH_BIT);
 
     VK_CHECK(vkCreateImageView(_device, &dview_info, nullptr, &msaaDepth.imageView));
 
@@ -190,7 +179,9 @@ void PBREngine::draw()
 
     // performance stuff.
     if (get_current_frame().timestampCount > 0)
+    {
         builder.ReadTimestamps(get_current_frame());
+    }
 
     lastCompleteStats = get_current_frame().stats;
     get_current_frame().stats = {};
@@ -198,8 +189,7 @@ void PBREngine::draw()
     get_current_frame()._deletionQueue.flush();
     get_current_frame()._frameDescriptors.clear_pools(_device);
     uint32_t swapchainImageIndex;
-    VkResult e = vkAcquireNextImageKHR(_device, _swapchain, 1000000000, get_current_frame()._renderSemaphore, nullptr,
-                                       &swapchainImageIndex);
+    VkResult e = vkAcquireNextImageKHR(_device, _swapchain, 1000000000, get_current_frame()._renderSemaphore, nullptr, &swapchainImageIndex);
     if (e == VK_ERROR_OUT_OF_DATE_KHR || e == VK_SUBOPTIMAL_KHR)
     {
         resize_requested = true;
@@ -217,14 +207,11 @@ void PBREngine::draw()
     VkCommandBuffer cmd = get_current_frame()._mainCommandBuffer;
 
     // transition the draw image and the swapchain image into their correct transfer layouts
-    vkutil::transition_image(cmd, _drawImage.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                             VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    vkutil::transition_image(cmd, _swapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED,
-                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    vkutil::transition_image(cmd, _drawImage.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    vkutil::transition_image(cmd, _swapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
     // execute a copy from the draw image into the swapchain
-    vkutil::copy_image_to_image(cmd, _drawImage.image, _swapchainImages[swapchainImageIndex], _drawExtent,
-                                _swapchainExtent);
+    vkutil::copy_image_to_image(cmd, _drawImage.image, _swapchainImages[swapchainImageIndex], _drawExtent, _swapchainExtent);
 
     // set swapchain image layout to Attachment Optimal so we can draw it
     vkutil::transition_image(cmd, _swapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -234,8 +221,7 @@ void PBREngine::draw()
     draw_imgui(cmd, _swapchainImageViews[swapchainImageIndex]);
 
     // set swapchain image layout to Present so we can draw it
-    vkutil::transition_image(cmd, _swapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    vkutil::transition_image(cmd, _swapchainImages[swapchainImageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     // finalize the command buffer (we can no longer add commands, but it can now be executed)
     VK_CHECK(vkEndCommandBuffer(cmd));
@@ -244,10 +230,10 @@ void PBREngine::draw()
     // start submit queue -------------------------------------
     VkCommandBufferSubmitInfo cmdInfo = vkinit::command_buffer_submit_info(cmd);
 
-    VkSemaphoreSubmitInfo waitInfo = vkinit::semaphore_submit_info(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
-                                                                   get_current_frame()._renderSemaphore);
-    VkSemaphoreSubmitInfo signalInfo = vkinit::semaphore_submit_info(
-        VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT, swapchainSyncStructures[swapchainImageIndex]._presentSemaphore);
+    VkSemaphoreSubmitInfo waitInfo =
+        vkinit::semaphore_submit_info(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, get_current_frame()._renderSemaphore);
+    VkSemaphoreSubmitInfo signalInfo =
+        vkinit::semaphore_submit_info(VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT, swapchainSyncStructures[swapchainImageIndex]._presentSemaphore);
     VkSubmitInfo2 submit = vkinit::submit_info(&cmdInfo, &signalInfo, &waitInfo);
     VK_CHECK(vkQueueSubmit2(_graphicsQueue, 1, &submit, get_current_frame()._renderFence));
 
@@ -268,7 +254,9 @@ void PBREngine::draw()
 
     VkResult presentResult = vkQueuePresentKHR(_graphicsQueue, &presentInfo);
     if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
+    {
         resize_requested = true;
+    }
 
     // increase the number of frames drawn
     _frameNumber++;

@@ -32,12 +32,13 @@ void GPUResourceAllocator::init(VmaAllocator &_allocator, VkDevice _device)
 GPUResourceAllocator &GPUResourceAllocator::GetInstance()
 {
     if (instance)
+    {
         return *instance;
+    }
     throw("GPUResourceAllocator was retrieved without initialization");
 }
 
-AllocatedBuffer GPUResourceAllocator::create_buffer(size_t allocSize, VkBufferUsageFlags usage,
-                                                    VmaMemoryUsage memoryUsage)
+AllocatedBuffer GPUResourceAllocator::create_buffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage)
 {
     // allocate buffer
     VkBufferCreateInfo bufferInfo = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
@@ -52,14 +53,12 @@ AllocatedBuffer GPUResourceAllocator::create_buffer(size_t allocSize, VkBufferUs
     AllocatedBuffer newBuffer;
 
     // allocate the buffer
-    VK_CHECK(vmaCreateBuffer(_allocator, &bufferInfo, &vmaallocInfo, &newBuffer.buffer, &newBuffer.allocation,
-                             &newBuffer.info));
+    VK_CHECK(vmaCreateBuffer(_allocator, &bufferInfo, &vmaallocInfo, &newBuffer.buffer, &newBuffer.allocation, &newBuffer.info));
 
     return newBuffer;
 }
 
-AllocatedImage GPUResourceAllocator::create_image(VkExtent3D size, VkFormat format, VkImageUsageFlags usage,
-                                                  bool mipmapped)
+AllocatedImage GPUResourceAllocator::create_image(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped)
 {
     AllocatedImage newImage;
     newImage.imageFormat = format;
@@ -67,7 +66,9 @@ AllocatedImage GPUResourceAllocator::create_image(VkExtent3D size, VkFormat form
 
     VkImageCreateInfo img_info = vkinit::image_create_info(format, usage, size);
     if (mipmapped)
+    {
         img_info.mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(size.width, size.height)))) + 1;
+    }
 
     // always allocate images on dedicated GPU memory
     VmaAllocationCreateInfo allocinfo = {};
@@ -81,7 +82,9 @@ AllocatedImage GPUResourceAllocator::create_image(VkExtent3D size, VkFormat form
     // aspect flag
     VkImageAspectFlags aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT;
     if (format == VK_FORMAT_D32_SFLOAT)
+    {
         aspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT;
+    }
 
     // build a image-view for the image
     VkImageViewCreateInfo view_info = vkinit::imageview_create_info(format, newImage.image, aspectFlag);
@@ -92,23 +95,19 @@ AllocatedImage GPUResourceAllocator::create_image(VkExtent3D size, VkFormat form
     return newImage;
 }
 
-AllocatedImage GPUResourceAllocator::create_image(void *data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage,
-                                                  bool mipmapped)
+AllocatedImage GPUResourceAllocator::create_image(void *data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped)
 {
     size_t data_size = size.depth * size.width * size.height * 4;
-    AllocatedBuffer uploadbuffer =
-        create_buffer(data_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+    AllocatedBuffer uploadbuffer = create_buffer(data_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
     memcpy(uploadbuffer.info.pMappedData, data, data_size);
 
-    AllocatedImage new_image = create_image(
-        size, format, usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, mipmapped);
+    AllocatedImage new_image = create_image(size, format, usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, mipmapped);
 
     _engine->immediate_submit(
         [&](VkCommandBuffer cmd)
         {
-            vkutil::transition_image(cmd, new_image.image, VK_IMAGE_LAYOUT_UNDEFINED,
-                                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            vkutil::transition_image(cmd, new_image.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
             VkBufferImageCopy copyRegion = {};
             copyRegion.bufferOffset = 0;
@@ -122,18 +121,15 @@ AllocatedImage GPUResourceAllocator::create_image(void *data, VkExtent3D size, V
             copyRegion.imageExtent = size;
 
             // copy the buffer into the image
-            vkCmdCopyBufferToImage(cmd, uploadbuffer.buffer, new_image.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
-                                   &copyRegion);
+            vkCmdCopyBufferToImage(cmd, uploadbuffer.buffer, new_image.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
             if (mipmapped)
             {
-                vkutil::generate_mipmaps(cmd, new_image.image,
-                                         VkExtent2D{new_image.imageExtent.width, new_image.imageExtent.height});
+                vkutil::generate_mipmaps(cmd, new_image.image, VkExtent2D{new_image.imageExtent.width, new_image.imageExtent.height});
             }
             else
             {
-                vkutil::transition_image(cmd, new_image.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                vkutil::transition_image(cmd, new_image.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             }
         });
     destroy_buffer(uploadbuffer);
@@ -148,23 +144,19 @@ GPUMeshBuffers GPUResourceAllocator::uploadMesh(std::span<uint32_t> indices, std
     GPUMeshBuffers newSurface;
 
     // create vertex buffer
-    newSurface.vertexBuffer = create_buffer(vertexBufferSize,
-                                            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                                                VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                                            VMA_MEMORY_USAGE_GPU_ONLY);
+    newSurface.vertexBuffer = create_buffer(
+        vertexBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+        VMA_MEMORY_USAGE_GPU_ONLY);
 
     // find the adress of the vertex buffer
-    VkBufferDeviceAddressInfo deviceAdressInfo{.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
-                                               .buffer = newSurface.vertexBuffer.buffer};
+    VkBufferDeviceAddressInfo deviceAdressInfo{.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, .buffer = newSurface.vertexBuffer.buffer};
     newSurface.vertexBufferAddress = vkGetBufferDeviceAddress(_device, &deviceAdressInfo);
 
     // create index buffer
     newSurface.indexBuffer =
-        create_buffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                      VMA_MEMORY_USAGE_GPU_ONLY);
+        create_buffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
-    AllocatedBuffer staging =
-        create_buffer(vertexBufferSize + indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+    AllocatedBuffer staging = create_buffer(vertexBufferSize + indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
     void *data = staging.allocation->GetMappedData();
 
@@ -217,15 +209,13 @@ VkDevice GPUResourceAllocator::getDevice()
     return _device;
 }
 
-void GPUResourceAllocator::create_image(VkImageCreateInfo *pImageCreateInfo,
-                                        VmaAllocationCreateInfo *pAllocationCreateInfo, VkImage *pImage,
+void GPUResourceAllocator::create_image(VkImageCreateInfo *pImageCreateInfo, VmaAllocationCreateInfo *pAllocationCreateInfo, VkImage *pImage,
                                         VmaAllocation *pAllocation, VmaAllocationInfo *pAllocationInfo)
 {
     vmaCreateImage(_allocator, pImageCreateInfo, pAllocationCreateInfo, pImage, pAllocation, pAllocationInfo);
 }
 
-void GPUResourceAllocator::destroy_image(VkImage VMA_NULLABLE_NON_DISPATCHABLE image,
-                                         VmaAllocation VMA_NULLABLE allocation)
+void GPUResourceAllocator::destroy_image(VkImage VMA_NULLABLE_NON_DISPATCHABLE image, VmaAllocation VMA_NULLABLE allocation)
 {
     vmaDestroyImage(_allocator, image, allocation);
 }

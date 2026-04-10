@@ -13,8 +13,7 @@ namespace rgraph
     class ComputeBackgroundFeature : public IFeature
     {
       public:
-        ComputeBackgroundFeature(VkDevice _device, DeletionQueue &delQueue, VkExtent3D imageExtent,
-                                 AllocatedImage drawImage);
+        ComputeBackgroundFeature(VkDevice _device, DeletionQueue &delQueue, VkExtent3D imageExtent, AllocatedImage drawImage);
 
         void Register(Rendergraph *builder) override;
 

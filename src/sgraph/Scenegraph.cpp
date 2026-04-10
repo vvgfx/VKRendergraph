@@ -19,7 +19,9 @@ std::shared_ptr<INode> Scenegraph::getRoot()
 std::optional<std::shared_ptr<INode>> Scenegraph::getNode(std::string name)
 {
     if (nodes.contains(name))
+    {
         return nodes[name];
+    }
 
     return std::nullopt;
 }

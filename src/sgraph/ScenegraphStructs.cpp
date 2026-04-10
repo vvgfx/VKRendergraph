@@ -18,9 +18,13 @@ void sgraph::GLTFMeshNode::Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
         def.vertexBufferAddress = mesh->meshBuffers.vertexBufferAddress;
 
         if (s.material->data.passType == MaterialPass::Transparent)
+        {
             ctx.TransparentSurfaces.push_back(def);
+        }
         else
+        {
             ctx.OpaqueSurfaces.push_back(def);
+        }
     }
 
     // recurse down
@@ -55,9 +59,13 @@ bool is_visible(const RenderObject &obj, const glm::mat4 &viewproj)
 
     // check the clip space box is within the view
     if (min.z > 1.f || max.z < 0.f || min.x > 1.f || max.x < -1.f || min.y > 1.f || max.y < -1.f)
+    {
         return false;
+    }
     else
+    {
         return true;
+    }
 }
 
 void sgraph::GLTFLightNode::Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
