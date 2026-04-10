@@ -54,7 +54,7 @@ void PBREngine::init()
     builder.AddTrackedImage("msaaColor", VK_IMAGE_LAYOUT_UNDEFINED, msaaColor);
     builder.AddTrackedImage("msaaDepth", VK_IMAGE_LAYOUT_UNDEFINED, msaaDepth);
 
-    builder.setReqData(_device, _drawImage.imageExtent);
+    builder.Init(_device, _drawImage.imageExtent);
     builder.AddFeature(computeFeature);
     builder.AddFeature(PBRFeature);
 

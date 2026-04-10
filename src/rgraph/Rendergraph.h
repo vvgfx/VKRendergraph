@@ -30,7 +30,12 @@ namespace rgraph
 
         // These are used for color and depth attachments
         bool store;
-        VkClearValue *clear;
+        VkClearValue *clear = nullptr;
+
+        // for resolution
+        bool bResolve = false;
+        std::string resolveName;
+        VkResolveModeFlagBits resolutionMode;
     };
 
     struct PassBufferCreationInfo
@@ -48,16 +53,19 @@ namespace rgraph
         void ReadsImage(const std::string name, VkImageLayout layout);
         void WritesImage(const std::string name);
 
-        // Add these back as I require.
         // these are for graphics.
         void AddColorAttachment(const std::string name, bool store, VkClearValue *clear = nullptr);
+
+        // default colorResolutionMode = VK_RESOLVE_MODE_AVERAGE_BIT. Pass nullptr to clear to keep value.
+        void AddColorAttachment(const std::string name, bool store, VkClearValue *clear, std::string resolveName,
+                                VkResolveModeFlagBits colorResolutionMode = VK_RESOLVE_MODE_AVERAGE_BIT);
+
         void AddDepthStencilAttachment(const std::string name, bool store, VkClearValue *clear = nullptr);
 
-        // need a resolve target for MSAA
-        void AddResolveTarget(
-            const std::string resolveColorImageName, std::string resolveDepthImageName,
-            VkResolveModeFlagBits colorResolutionMode = VK_RESOLVE_MODE_AVERAGE_BIT,
-            VkResolveModeFlagBits depthResolutionMode = VK_RESOLVE_MODE_MAX_BIT); // using reverse-z, so MAX, not MIN
+        // default depthResolutionMode = VK_RESOLVE_MODE_MAX_BIT (using reverse-z, so MAX, not MIN). Pass nullptr to
+        // clear to keep value.
+        void AddDepthStencilAttachment(const std::string name, bool store, VkClearValue *clear, std::string resolveName,
+                                       VkResolveModeFlagBits depthResolutionMode = VK_RESOLVE_MODE_MAX_BIT);
 
         void CreatesBuffer(const std::string name, size_t size, VkBufferUsageFlags usages);
 
@@ -68,27 +76,17 @@ namespace rgraph
         std::string name;
 
       private:
-        // add imageRead vector
         std::vector<PassImageRead> imageReads;
-        // add imageWrite vector
         std::vector<PassImageWrite> imageWrites;
 
-        // add imageWrite vector for colorAttachments
         std::vector<PassImageWrite> colorAttachments;
 
-        // add PassBufferCreationInfo vector for buffer creations
         std::vector<PassBufferCreationInfo> bufferCreations;
         // add string vector for buffer dependencies
 
         // add depth attachment read, bool storeDepth, and a reference to the creating builder itself.
         PassImageWrite depthAttachment{};
         bool storeDepth;
-        bool bresolveColor = false;
-        bool bresolveDepth = false;
-        std::string resolveColorImageName;
-        std::string resolveDepthImageName;
-        VkResolveModeFlagBits colorResolutionMode;
-        VkResolveModeFlagBits depthResolutionMode;
     };
 
     struct PassExecution
@@ -147,7 +145,7 @@ namespace rgraph
 
         void AddFeature(std::weak_ptr<IFeature> feature);
 
-        void setReqData(VkDevice _device, VkExtent3D _extent);
+        void Init(VkDevice _device, VkExtent3D _extent);
 
         // performance stuff.
         void SetTimestampPeriod(float period)

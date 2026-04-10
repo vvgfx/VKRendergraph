@@ -40,6 +40,9 @@ namespace vkinit
     VkRenderingInfo rendering_info(VkExtent2D renderExtent, VkRenderingAttachmentInfo *colorAttachment,
                                    VkRenderingAttachmentInfo *depthAttachment);
 
+    VkRenderingInfo rendering_info(VkExtent2D renderExtent, std::vector<VkRenderingAttachmentInfo> *colorAttachments,
+                                   VkRenderingAttachmentInfo *depthAttachment);
+
     VkImageSubresourceRange image_subresource_range(VkImageAspectFlags aspectMask);
 
     VkSemaphoreSubmitInfo semaphore_submit_info(VkPipelineStageFlags2 stageMask, VkSemaphore semaphore);

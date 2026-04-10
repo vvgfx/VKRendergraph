@@ -57,9 +57,8 @@ void rgraph::PBRShadingFeature::Register(rgraph::Rendergraph *builder)
             static VkClearValue colorClearValue{};
             colorClearValue.color = {0.0f, 0.0f, 0.0f, 0.0f};
             colorClearValue.depthStencil = {0.0f};
-            pass.AddColorAttachment("msaaColor", false, &colorClearValue);
+            pass.AddColorAttachment("msaaColor", false, &colorClearValue, "drawImage", VK_RESOLVE_MODE_AVERAGE_BIT);
             pass.AddDepthStencilAttachment("msaaDepth", false, &colorClearValue);
-            pass.AddResolveTarget("drawImage", "");
             pass.CreatesBuffer("gpuSceneBuffer", sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
             pass.CreatesBuffer("lightBuffer", sizeof(LightData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         },

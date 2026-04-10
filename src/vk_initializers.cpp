@@ -1,4 +1,5 @@
 ﻿#include <vk_initializers.h>
+#include <vulkan/vulkan_core.h>
 
 //> init_cmd
 VkCommandPoolCreateInfo vkinit::command_pool_create_info(uint32_t queueFamilyIndex,
@@ -212,6 +213,23 @@ VkRenderingInfo vkinit::rendering_info(VkExtent2D renderExtent, VkRenderingAttac
     renderInfo.layerCount = 1;
     renderInfo.colorAttachmentCount = 1;
     renderInfo.pColorAttachments = colorAttachment;
+    renderInfo.pDepthAttachment = depthAttachment;
+    renderInfo.pStencilAttachment = nullptr;
+
+    return renderInfo;
+}
+VkRenderingInfo vkinit::rendering_info(VkExtent2D renderExtent,
+                                       std::vector<VkRenderingAttachmentInfo> *colorAttachments,
+                                       VkRenderingAttachmentInfo *depthAttachment)
+{
+    VkRenderingInfo renderInfo{};
+    renderInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+    renderInfo.pNext = nullptr;
+
+    renderInfo.renderArea = VkRect2D{VkOffset2D{0, 0}, renderExtent};
+    renderInfo.layerCount = 1;
+    renderInfo.colorAttachmentCount = colorAttachments->size();
+    renderInfo.pColorAttachments = colorAttachments->data();
     renderInfo.pDepthAttachment = depthAttachment;
     renderInfo.pStencilAttachment = nullptr;
 

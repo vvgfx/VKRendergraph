@@ -5,10 +5,12 @@
 #include "vk_images.h"
 #include "vk_initializers.h"
 #include "vk_types.h"
+#include <cassert>
 #include <chrono>
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 void rgraph::Pass::ReadsImage(const std::string name, VkImageLayout layout)
 {
@@ -16,7 +18,7 @@ void rgraph::Pass::ReadsImage(const std::string name, VkImageLayout layout)
     imageRead.name = name;
     imageRead.startingLayout = layout;
 
-    imageReads.emplace_back(imageRead);
+    imageReads.emplace_back(std::move(imageRead));
 }
 
 void rgraph::Pass::WritesImage(const std::string name)
@@ -24,10 +26,21 @@ void rgraph::Pass::WritesImage(const std::string name)
     PassImageWrite imageWrite = {};
     imageWrite.name = name;
 
-    imageWrites.emplace_back(imageWrite);
+    imageWrites.emplace_back(std::move(imageWrite));
 }
 
 void rgraph::Pass::AddColorAttachment(const std::string name, bool store, VkClearValue *clear)
+{
+    PassImageWrite imageWrite = {};
+    imageWrite.clear = clear;
+    imageWrite.store = store;
+    imageWrite.name = name;
+
+    colorAttachments.emplace_back(std::move(imageWrite));
+}
+
+void rgraph::Pass::AddColorAttachment(const std::string name, bool store, VkClearValue *clear, std::string resolveName,
+                                      VkResolveModeFlagBits colorResolutionMode)
 {
     // if store, write to color attachment, and if clearvalue is null, do not clear the value beforehand.
     PassImageWrite imageWrite = {};
@@ -35,7 +48,11 @@ void rgraph::Pass::AddColorAttachment(const std::string name, bool store, VkClea
     imageWrite.store = store;
     imageWrite.name = name;
 
-    colorAttachments.emplace_back(imageWrite);
+    imageWrite.bResolve = true;
+    imageWrite.resolveName = resolveName;
+    imageWrite.resolutionMode = colorResolutionMode;
+
+    colorAttachments.emplace_back(std::move(imageWrite));
 }
 
 void rgraph::Pass::AddDepthStencilAttachment(const std::string name, bool store, VkClearValue *clear)
@@ -45,23 +62,16 @@ void rgraph::Pass::AddDepthStencilAttachment(const std::string name, bool store,
     depthAttachment.name = name;
 }
 
-void rgraph::Pass::AddResolveTarget(std::string resolveColorImageName, std::string resolveDepthImageName,
-                                    VkResolveModeFlagBits colorResolutionMode,
-                                    VkResolveModeFlagBits depthResolutionMode)
+void rgraph::Pass::AddDepthStencilAttachment(const std::string name, bool store, VkClearValue *clear,
+                                             std::string resolveName, VkResolveModeFlagBits depthResolutionMode)
 {
-    if (!resolveColorImageName.empty())
-    {
-        bresolveColor = true;
-        this->resolveColorImageName = resolveColorImageName;
-        this->colorResolutionMode = colorResolutionMode;
-    }
+    depthAttachment.clear = clear;
+    depthAttachment.store = store;
+    depthAttachment.name = name;
 
-    if (!resolveDepthImageName.empty())
-    {
-        bresolveColor = true;
-        this->resolveDepthImageName = resolveDepthImageName;
-        this->depthResolutionMode = depthResolutionMode;
-    }
+    depthAttachment.bResolve = true;
+    depthAttachment.resolveName = resolveName;
+    depthAttachment.resolutionMode = depthResolutionMode;
 }
 
 void rgraph::Rendergraph::AddComputePass(const std::string name, std::function<void(Pass &)> setup,
@@ -72,9 +82,9 @@ void rgraph::Rendergraph::AddComputePass(const std::string name, std::function<v
     pass.name = name;
     setup(pass);
 
-    passData.emplace_back(pass);
+    passData.emplace_back(std::move(pass));
 
-    executionLambdas.emplace_back(run);
+    executionLambdas.emplace_back(std::move(run));
 }
 
 void rgraph::Rendergraph::AddGraphicsPass(const std::string name, std::function<void(Pass &)> setup,
@@ -85,7 +95,7 @@ void rgraph::Rendergraph::AddGraphicsPass(const std::string name, std::function<
     pass.name = name;
     setup(pass);
 
-    passData.emplace_back(pass);
+    passData.emplace_back(std::move(pass));
 
     executionLambdas.emplace_back(run);
 }
@@ -113,14 +123,18 @@ void rgraph::Rendergraph::Build(FrameData &frameData)
     // the transitions.
     /// currently this depends on the order in which features are added.
     for (auto &feature : features)
+    {
         feature.lock()->Register(this);
+    }
 
     // all the AddXPass would be called above.
 
     std::unordered_map<std::string, VkImageLayout> imgLayoutMap;
 
     for (auto &image : images)
+    {
         imgLayoutMap[image.first] = VK_IMAGE_LAYOUT_UNDEFINED;
+    }
 
     for (auto &pass : passData)
     {
@@ -152,7 +166,6 @@ void rgraph::Rendergraph::Build(FrameData &frameData)
         }
 
         // get the color and depth attachments later, they should be in color/depth _optimal
-
         for (auto &colorImage : pass.colorAttachments)
         {
             if (imgLayoutMap[colorImage.name] != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
@@ -161,6 +174,17 @@ void rgraph::Rendergraph::Build(FrameData &frameData)
                 transitionData[pass.name].push_back(
                     {colorImage.name, imgLayoutMap[colorImage.name], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL});
                 imgLayoutMap[colorImage.name] = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            }
+
+            // resolve targets as well
+            if (colorImage.bResolve)
+            {
+                if (imgLayoutMap[colorImage.resolveName] != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                {
+                    transitionData[pass.name].push_back({colorImage.resolveName, imgLayoutMap[colorImage.resolveName],
+                                                         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL});
+                    imgLayoutMap[colorImage.resolveName] = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                }
             }
         }
 
@@ -173,15 +197,18 @@ void rgraph::Rendergraph::Build(FrameData &frameData)
             transitionData[pass.name].push_back({pass.depthAttachment.name, imgLayoutMap[pass.depthAttachment.name],
                                                  VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL});
             imgLayoutMap[pass.depthAttachment.name] = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-        }
 
-        // for resolution targets.
-        if (imgLayoutMap.contains(pass.resolveColorImageName) &&
-            imgLayoutMap[pass.resolveColorImageName] != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-        {
-            transitionData[pass.name].push_back({pass.resolveColorImageName, imgLayoutMap[pass.resolveColorImageName],
-                                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL});
-            imgLayoutMap[pass.resolveColorImageName] = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            // also do resolve targets
+            if (pass.depthAttachment.bResolve)
+            {
+                if (imgLayoutMap[pass.depthAttachment.resolveName] != VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL)
+                {
+                    transitionData[pass.name].push_back({pass.depthAttachment.resolveName,
+                                                         imgLayoutMap[pass.depthAttachment.resolveName],
+                                                         VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL});
+                    imgLayoutMap[pass.depthAttachment.resolveName] = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+                }
+            }
         }
     }
 }
@@ -265,40 +292,53 @@ void rgraph::Rendergraph::Run(FrameData &frameData)
         // Execute the pass with its own context
         if (pass.type == PassType::Graphics)
         {
-            // TODO: Support multiple color attachments
 
-            AllocatedImage drawImage = images[pass.colorAttachments[0].name];
+            std::vector<VkRenderingAttachmentInfo> colorAttachments;
             AllocatedImage depthImage = images[pass.depthAttachment.name];
-            VkRenderingAttachmentInfo colorAttachment;
-            if (!pass.bresolveColor)
-                colorAttachment = vkinit::attachment_info(
-                    drawImage.imageView, pass.colorAttachments[0].store ? nullptr : pass.colorAttachments[0].clear,
-                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-            else
-                colorAttachment = vkinit::attachment_info(
-                    drawImage.imageView, pass.colorAttachments[0].store ? nullptr : pass.colorAttachments[0].clear,
-                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, images[pass.resolveColorImageName].imageView,
-                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, pass.colorResolutionMode);
+            for (auto &colAttachment : pass.colorAttachments)
+            {
+                AllocatedImage drawImage = images[colAttachment.name];
+                VkRenderingAttachmentInfo colorAttachment;
+                if (!colAttachment.bResolve)
+                {
+                    colorAttachment = vkinit::attachment_info(drawImage.imageView, colAttachment.clear,
+                                                              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                }
+                else
+                {
+                    colorAttachment = vkinit::attachment_info(
+                        drawImage.imageView, colAttachment.clear, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                        images[colAttachment.resolveName].imageView, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                        colAttachment.resolutionMode);
+                }
+                colorAttachments.emplace_back(std::move(colorAttachment));
+            }
 
             VkRenderingAttachmentInfo depthAttachment;
 
             // setup depth attachment similarly
-            if (!pass.bresolveDepth)
+            if (!pass.depthAttachment.bResolve)
+            {
                 depthAttachment =
                     vkinit::depth_attachment_info(depthImage.imageView, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+            }
             else
-                depthAttachment =
-                    vkinit::depth_attachment_info(depthImage.imageView, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
-                                                  images[pass.resolveDepthImageName].imageView,
-                                                  VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, pass.depthResolutionMode);
+            {
+                depthAttachment = vkinit::depth_attachment_info(
+                    depthImage.imageView, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+                    images[pass.depthAttachment.resolveName].imageView, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+                    pass.depthAttachment.resolutionMode);
+            }
             VkRenderingInfo renderInfo =
-                vkinit::rendering_info({_extent.width, _extent.height}, &colorAttachment, &depthAttachment);
+                vkinit::rendering_info({_extent.width, _extent.height}, &colorAttachments, &depthAttachment);
             vkCmdBeginRendering(cmd, &renderInfo);
         }
         executionLambdas[i](exec);
 
         if (pass.type == PassType::Graphics)
+        {
             vkCmdEndRendering(cmd);
+        }
 
         vkCmdWriteTimestamp(cmd, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, queryPool, queryIndex);
         queryIndex++;
@@ -311,7 +351,9 @@ void rgraph::Rendergraph::Run(FrameData &frameData)
         PassStats stats;
         stats.name = pass.name;
         if (pass.type == PassType::Compute)
+        {
             stats.computeDispatches = exec.dispatchCalls;
+        }
         else
         {
             stats.draws = exec.drawCalls;
@@ -341,7 +383,7 @@ void rgraph::Rendergraph::AddFeature(std::weak_ptr<IFeature> feature)
     features.emplace_back(feature);
 }
 
-void rgraph::Rendergraph::setReqData(VkDevice _device, VkExtent3D _extent)
+void rgraph::Rendergraph::Init(VkDevice _device, VkExtent3D _extent)
 {
     this->_device = _device;
     this->_extent = _extent;
@@ -370,7 +412,9 @@ void rgraph::Pass::WritesBuffer(const std::string name)
 void rgraph::Rendergraph::ReadTimestamps(FrameData &frameData)
 {
     if (frameData.timestampCount == 0)
+    {
         return;
+    }
 
     std::vector<uint64_t> timestamps(frameData.timestampCount);
 
@@ -378,7 +422,9 @@ void rgraph::Rendergraph::ReadTimestamps(FrameData &frameData)
                                             timestamps.size() * sizeof(uint64_t), timestamps.data(), sizeof(uint64_t),
                                             VK_QUERY_RESULT_64_BIT);
     if (result != VK_SUCCESS)
+    {
         return;
+    }
 
     for (size_t i = 0; i < frameData.passIndices.size() && i < frameData.stats.passStats.size(); i++)
     {
