@@ -26,7 +26,7 @@ void PBREngine::init()
     creatorData.defaultImage = _whiteImage;
     creatorData.loadErrorImage = _errorCheckerboardImage;
     creatorData._device = _device;
-    creatorData.materialSystemReference = &materialSystemInstance; // this would change to a reference from the material system in PBRShadingFeature.
+    creatorData.materialSystemReference = &materialSystemInstance;
 
     // this is called after the pipelines are initialzed.
     auto structureFile = loadGltf(creatorData, structurePath);
@@ -62,7 +62,7 @@ void PBREngine::init_pipelines()
 {
     VulkanEngine::init_pipelines();
 
-    materialSystemInstance.build_descriptors(_device);
+    // no longer keeping material system on child class.
 }
 
 void PBREngine::init_default_data()
@@ -76,7 +76,7 @@ void PBREngine::init_default_data()
     materialResources.metalRoughImage = _whiteImage;
     materialResources.metalRoughSampler = _defaultSamplerLinear;
 
-    GPUResourceAllocator _gpuResourceAllocator = GPUResourceAllocator::GetInstance();
+    GPUResourceAllocator _gpuResourceAllocator = GPUResourceAllocator::Instance();
     // set the uniform buffer for the material data
     AllocatedBuffer materialConstants = _gpuResourceAllocator.create_buffer(sizeof(MaterialSystem::MaterialConstants),
                                                                             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
@@ -86,7 +86,7 @@ void PBREngine::init_default_data()
     sceneUniformData->colorFactors = glm::vec4{1, 1, 1, 1};
     sceneUniformData->metal_rough_factors = glm::vec4{1, 0.5, 0, 0};
 
-    _mainDeletionQueue.push_function([=, this]() { GPUResourceAllocator::GetInstance().destroy_buffer(materialConstants); });
+    _mainDeletionQueue.push_function([=, this]() { GPUResourceAllocator::Instance().destroy_buffer(materialConstants); });
 
     materialResources.dataBuffer = materialConstants.buffer;
     materialResources.dataBufferOffset = 0;
@@ -134,7 +134,7 @@ void PBREngine::createMsaaImages()
     rimg_allocinfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     // allocate and create the image
-    GPUResourceAllocator &_gpuResourceAllocator = GPUResourceAllocator::GetInstance();
+    GPUResourceAllocator &_gpuResourceAllocator = GPUResourceAllocator::Instance();
     _gpuResourceAllocator.create_image(&rimg_info, &rimg_allocinfo, &msaaColor.image, &msaaColor.allocation, nullptr);
 
     // build a image-view for the draw image to use for rendering
@@ -162,7 +162,7 @@ void PBREngine::createMsaaImages()
     _mainDeletionQueue.push_function(
         [=, this]()
         {
-            auto _gpuResourceAllocator = GPUResourceAllocator::GetInstance();
+            auto _gpuResourceAllocator = GPUResourceAllocator::Instance();
             vkDestroyImageView(_device, msaaColor.imageView, nullptr);
             _gpuResourceAllocator.destroy_image(msaaColor.image, msaaColor.allocation);
 

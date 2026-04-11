@@ -7,7 +7,6 @@
 #include "vk_pipelines.h"
 #include "vk_types.h"
 #include <algorithm>
-#include <memory>
 
 // multisampling config ---------------------------
 
@@ -23,8 +22,6 @@ rgraph::PBRShadingFeature::PBRShadingFeature(DrawContext &drwCtx, VkDevice _devi
     : drawContext(drwCtx), sceneData(scnData)
 {
     _gpuSceneDataDescriptorLayout = gpuSceneLayout;
-    materialSystem = std::make_shared<MaterialSystem>();
-    materialSystem->build_descriptors(_device);
 
     // create descriptor set for lights.
     {
@@ -37,7 +34,6 @@ rgraph::PBRShadingFeature::PBRShadingFeature(DrawContext &drwCtx, VkDevice _devi
     delQueue.push_function(
         [_device, this]()
         {
-            materialSystem->clear_resources(_device);
             vkDestroyDescriptorSetLayout(_device, lightDescriptorSetLayout, nullptr);
             vkDestroyPipelineLayout(_device, transparentPipeline.layout, nullptr);
             vkDestroyPipeline(_device, transparentPipeline.pipeline, nullptr);
@@ -224,7 +220,7 @@ void rgraph::PBRShadingFeature::createPipelines(MaterialSystemCreateInfo &info)
     matrixRange.size = sizeof(GPUDrawPushConstants);
     matrixRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-    auto materialLayout = materialSystem->materialLayout;
+    auto materialLayout = VulkanEngine::Instance().GetMaterialSystem().materialLayout;
 
     VkDescriptorSetLayout layouts[] = {info._gpuSceneDataDescriptorLayout, lightDescriptorSetLayout, materialLayout};
 

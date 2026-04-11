@@ -127,7 +127,7 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
         lights.push_back(ldata);
     }
 
-    GPUResourceAllocator gpuResourceAllocator = GPUResourceAllocator::GetInstance();
+    GPUResourceAllocator gpuResourceAllocator = GPUResourceAllocator::Instance();
 
     // load all textures
     for (fastgltf::Image &image : gltf.images)
@@ -407,7 +407,7 @@ void sgraph::GLTFScene::clearAll()
 {
     VkDevice dv = creator._device;
 
-    GPUResourceAllocator gpuResourceAllocator = GPUResourceAllocator::GetInstance();
+    GPUResourceAllocator gpuResourceAllocator = GPUResourceAllocator::Instance();
 
     descriptorPool.destroy_pools(dv);
     gpuResourceAllocator.destroy_buffer(materialDataBuffer);
@@ -476,7 +476,7 @@ std::optional<AllocatedImage> load_image(fastgltf::Asset &asset, fastgltf::Image
 
     int width, height, nrChannels;
 
-    GPUResourceAllocator gpuResourceAllocator = GPUResourceAllocator::GetInstance();
+    GPUResourceAllocator gpuResourceAllocator = GPUResourceAllocator::Instance();
 
     std::visit(
         fastgltf::visitor{
@@ -597,7 +597,7 @@ std::optional<std::shared_ptr<AllocatedImage>> loadImage(std::string fileName)
 
         AllocatedImage newImage{};
 
-        newImage = GPUResourceAllocator::GetInstance().create_image(data, imageSize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, false);
+        newImage = GPUResourceAllocator::Instance().create_image(data, imageSize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, false);
         stbi_image_free(data);
         return std::make_shared<AllocatedImage>(newImage);
     }

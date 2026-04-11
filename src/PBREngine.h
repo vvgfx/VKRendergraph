@@ -1,6 +1,5 @@
 #pragma once
 
-#include "MaterialSystem.h"
 #include "rgraph/Rendergraph.h"
 #include "rgraph/features/ComputeBackgroundFeature.h"
 #include "rgraph/features/PBRShadingFeature.h"
@@ -12,7 +11,6 @@
 class PBREngine : public VulkanEngine
 {
   public:
-    MaterialSystem materialSystemInstance;
     void init() override;
 
   protected:

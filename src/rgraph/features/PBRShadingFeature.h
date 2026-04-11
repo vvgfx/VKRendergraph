@@ -41,8 +41,6 @@ namespace rgraph
         // execution lambdas for run.
         void renderScene(PassExecution &passExec);
 
-        std::shared_ptr<MaterialSystem> materialSystem;
-
         MaterialPipeline opaquePipeline;
         MaterialPipeline transparentPipeline;
 

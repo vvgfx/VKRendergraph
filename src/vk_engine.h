@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "MaterialSystem.h"
 #include <GPUResourceAllocator.h>
 #include <camera.h>
 #include <cstdint>
@@ -163,6 +164,7 @@ class VulkanEngine
     AllocatedImage _depthImage; // depth testing
     VkExtent2D _drawExtent;
     DescriptorAllocatorGrowable globalDescriptorAllocator;
+    MaterialSystem materialSystemInstance;
 
     VkDescriptorSet _drawImageDescriptors;
     VkDescriptorSetLayout _drawImageDescriptorLayout;
@@ -221,7 +223,7 @@ class VulkanEngine
 
     struct SDL_Window *_window{nullptr};
 
-    static VulkanEngine &Get();
+    static VulkanEngine &Instance();
 
     // initializes everything in the engine
     virtual void init();
@@ -237,6 +239,11 @@ class VulkanEngine
 
     virtual void imGuiAddParams()
     {
+    }
+
+    MaterialSystem &GetMaterialSystem()
+    {
+        return materialSystemInstance;
     }
 
     // scenegraph stuff
@@ -278,4 +285,7 @@ class VulkanEngine
 
     // single cleanup override method for all children
     virtual void cleanupOnChildren();
+
+  private:
+    static VulkanEngine *loadedEngine;
 };

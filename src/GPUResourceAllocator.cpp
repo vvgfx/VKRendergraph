@@ -22,14 +22,14 @@ void GPUResourceAllocator::init(VmaAllocator &_allocator, VkDevice _device)
         instance = new GPUResourceAllocator();
         instance->_allocator = _allocator;
         instance->_device = _device;
-        instance->_engine = &VulkanEngine::Get();
+        instance->_engine = &VulkanEngine::Instance();
         return;
     }
 
     throw("GPUResourceAllocator is initialized more than once");
 }
 
-GPUResourceAllocator &GPUResourceAllocator::GetInstance()
+GPUResourceAllocator &GPUResourceAllocator::Instance()
 {
     if (instance)
     {
