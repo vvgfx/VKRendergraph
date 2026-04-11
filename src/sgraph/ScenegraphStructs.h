@@ -46,7 +46,7 @@ namespace sgraph
         }
     };
 
-    struct GLTFMeshNode : public Node
+    struct MeshNode : public Node
     {
 
         std::shared_ptr<MeshAsset> mesh;
@@ -54,7 +54,7 @@ namespace sgraph
         virtual void Draw(const glm::mat4 &topMatrix, DrawContext &ctx) override;
     };
 
-    struct GLTFLightNode : public Node
+    struct LightNode : public Node
     {
         std::shared_ptr<LightingData> lightingData;
 

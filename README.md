@@ -14,7 +14,7 @@ It has the following features:
 - Feature-based architecture - Rendering techniques are self-contained modules that implement an `IFeature` interface. Each feature registers its passes with the rendergraph builder using a setup/execute lambda pattern.
 - PBR shading - Metallic-roughness workflow with baseColor and metallicRoughness texture loading from GLTF files. Uses sRGB-correct linear workflow with ACES filmic tonemapping.
 - MSAA - 4x multisample anti-aliasing with rendergraph-managed resolve targets. MSAA color and depth are separate tracked images that resolve into the draw image.
-- GLTF scene loading - Mesh and light node support via fastgltf. Lights are passed to shaders through storage buffers.
+- GLTF scene loading - Mesh and light node support via fastgltf. Lights are passed to shaders through storage buffers. For now, this is the only way to load scenes/meshes into the renderer.
 - GPU profiling - Per-pass timestamp queries measuring GPU time, with results read back from a previous frame to avoid CPU-GPU stalls. Displayed through an ImGui overlay.
 - Bindless vertex fetching - Mesh buffer addresses are passed to shaders via buffer device addresses (BDA) through push constants, bypassing the traditional fixed-function vertex input pipeline.
 - Dynamic rendering - Uses Vulkan 1.3's dynamic rendering. No render pass objects or framebuffers.

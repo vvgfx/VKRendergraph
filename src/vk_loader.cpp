@@ -20,13 +20,13 @@ VkFilter extract_filter(fastgltf::Filter filter);
 VkSamplerMipmapMode extract_mipmap_mode(fastgltf::Filter filter);
 std::optional<AllocatedImage> load_image(fastgltf::Asset &asset, fastgltf::Image &image);
 
-std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creatorData, std::string_view filePath)
+std::optional<std::shared_ptr<sgraph::Scene>> loadGltf(GLTFCreatorData creatorData, std::string_view filePath)
 {
     fmt::print("Loading GLTF: {}", filePath);
 
-    std::shared_ptr<sgraph::GLTFScene> scene = std::make_shared<sgraph::GLTFScene>();
+    std::shared_ptr<sgraph::Scene> scene = std::make_shared<sgraph::Scene>();
     scene->creator = std::move(creatorData);
-    sgraph::GLTFScene &file = *scene.get();
+    sgraph::Scene &file = *scene.get();
 
     fastgltf::Parser parser(fastgltf::Extensions::KHR_lights_punctual);
 
@@ -335,14 +335,14 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
         // class
         if (node.meshIndex.has_value())
         {
-            newNode = std::make_shared<sgraph::GLTFMeshNode>();
-            static_cast<sgraph::GLTFMeshNode *>(newNode.get())->mesh = meshes[*node.meshIndex];
+            newNode = std::make_shared<sgraph::MeshNode>();
+            static_cast<sgraph::MeshNode *>(newNode.get())->mesh = meshes[*node.meshIndex];
         }
         else if (node.lightIndex.has_value())
         {
             // lighting mesh node.
-            newNode = std::make_shared<sgraph::GLTFLightNode>();
-            static_cast<sgraph::GLTFLightNode *>(newNode.get())->lightingData = lights[node.lightIndex.value()];
+            newNode = std::make_shared<sgraph::LightNode>();
+            static_cast<sgraph::LightNode *>(newNode.get())->lightingData = lights[node.lightIndex.value()];
         }
         else
         {
@@ -394,7 +394,7 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
     return scene;
 }
 
-void sgraph::GLTFScene::Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
+void sgraph::Scene::Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
 {
     // create renderables from the scenenodes
     for (auto &n : topNodes)
@@ -403,7 +403,7 @@ void sgraph::GLTFScene::Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
     }
 }
 
-void sgraph::GLTFScene::clearAll()
+void sgraph::Scene::clearAll()
 {
     VkDevice dv = creator._device;
 

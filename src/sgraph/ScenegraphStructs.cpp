@@ -2,7 +2,7 @@
 #include "vk_engine.h"
 #include "vk_types.h"
 
-void sgraph::GLTFMeshNode::Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
+void sgraph::MeshNode::Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
 {
     glm::mat4 nodeMatrix = topMatrix * worldTransform;
 
@@ -68,7 +68,7 @@ bool is_visible(const RenderObject &obj, const glm::mat4 &viewproj)
     }
 }
 
-void sgraph::GLTFLightNode::Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
+void sgraph::LightNode::Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
 {
     // each light node has 1 light.
     GPULightingData lData;

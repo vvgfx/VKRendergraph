@@ -81,7 +81,7 @@ namespace sgraph
      * This class has a 1:1 relation with a GLTF file. The idea is that it is self-contained. It holds its' own data,
      * and all the data is cleaned up when the node is destroyed.
      */
-    struct GLTFScene : public INode
+    struct Scene : public INode
     {
         // storage for all the data on a given glTF file
 
@@ -112,7 +112,7 @@ namespace sgraph
 
         GLTFCreatorData creator;
 
-        ~GLTFScene()
+        ~Scene()
         {
             clearAll();
         };
@@ -127,6 +127,6 @@ namespace sgraph
 
 } // namespace sgraph
 
-std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creatorData, std::string_view filePath);
+std::optional<std::shared_ptr<sgraph::Scene>> loadGltf(GLTFCreatorData creatorData, std::string_view filePath);
 
 std::optional<std::shared_ptr<AllocatedImage>> loadImage(std::string fileName);

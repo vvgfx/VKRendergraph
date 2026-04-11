@@ -28,7 +28,7 @@ class RGEngine : public VulkanEngine
     void imGuiAddParams() override;
 
     // gltf data
-    std::unordered_map<std::string, std::shared_ptr<sgraph::GLTFScene>> loadedScenes;
+    std::unordered_map<std::string, std::shared_ptr<sgraph::Scene>> loadedScenes;
 
     rgraph::Rendergraph builder;
     std::shared_ptr<rgraph::ComputeBackgroundFeature> computeFeature;
