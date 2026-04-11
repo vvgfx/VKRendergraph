@@ -69,10 +69,10 @@ void VulkanEngine::init()
     init_imgui();
 
     mainCamera.velocity = glm::vec3(0.f);
-    mainCamera.position = glm::vec3(0.f, 00.f, -05.f);
+    mainCamera.position = glm::vec3(30.f, -00.f, -085.f);
 
     mainCamera.pitch = 0;
-    mainCamera.yaw = 0;
+    mainCamera.yaw = 2.5f;
 
     // everything went fine
     _isInitialized = true;
@@ -715,13 +715,13 @@ void VulkanEngine::run()
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        if (ImGui::Begin("Stats"))
-        {
-            ImGui::Text("Framerate: %.4f", 1 / lastCompleteStats.frameTime * 1000);
-            ImGui::Text("frametime %.4f ms", lastCompleteStats.frameTime);
-            ImGui::Text("update time %.4f ms", lastCompleteStats.scene_update_time);
-        }
-        ImGui::End();
+        // if (ImGui::Begin("Stats"))
+        // {
+        //     ImGui::Text("Framerate: %.4f", 1 / lastCompleteStats.frameTime * 1000);
+        //     ImGui::Text("frametime %.4f ms", lastCompleteStats.frameTime);
+        //     ImGui::Text("update time %.4f ms", lastCompleteStats.scene_update_time);
+        // }
+        // ImGui::End();
 
         imGuiAddParams();
 
