@@ -8,12 +8,12 @@
 #include "vk_initializers.h"
 #include "vk_loader.h"
 #include "vk_types.h"
-#include <PBREngine.h>
+#include <RGEngine.h>
 #include <chrono>
 #include <memory>
 #include <vulkan/vulkan_core.h>
 
-void PBREngine::init()
+void RGEngine::init()
 {
 
     VulkanEngine::init();
@@ -58,14 +58,14 @@ void PBREngine::init()
     builder.SetTimestampPeriod(timestampPeriod);
 }
 
-void PBREngine::init_pipelines()
+void RGEngine::init_pipelines()
 {
     VulkanEngine::init_pipelines();
 
     // no longer keeping material system on child class.
 }
 
-void PBREngine::init_default_data()
+void RGEngine::init_default_data()
 {
     VulkanEngine::init_default_data();
 
@@ -94,14 +94,14 @@ void PBREngine::init_default_data()
     defaultData = materialSystemInstance.write_material(_device, MaterialPass::MainColor, materialResources, globalDescriptorAllocator);
 }
 
-void PBREngine::cleanupOnChildren()
+void RGEngine::cleanupOnChildren()
 {
 
     loadedScenes.clear();
     materialSystemInstance.clear_resources(_device);
 }
 
-void PBREngine::update_scene()
+void RGEngine::update_scene()
 {
     auto start = std::chrono::system_clock::now();
 
@@ -116,7 +116,7 @@ void PBREngine::update_scene()
     get_current_frame().stats.scene_update_time = elapsed.count() / 1000.f;
 }
 
-void PBREngine::createMsaaImages()
+void RGEngine::createMsaaImages()
 {
     VkExtent3D imageExtent = {_windowExtent.width, _windowExtent.height, 1};
 
@@ -171,7 +171,7 @@ void PBREngine::createMsaaImages()
         });
 }
 
-void PBREngine::draw()
+void RGEngine::draw()
 {
     update_scene();
 
@@ -264,7 +264,7 @@ void PBREngine::draw()
     // end present -------------------------------------
 }
 
-void PBREngine::imGuiAddParams()
+void RGEngine::imGuiAddParams()
 {
     if (ImGui::Begin("RenderGraph details"))
     {

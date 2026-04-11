@@ -8,7 +8,7 @@
 #include <vk_engine.h>
 #include <vk_types.h>
 
-class PBREngine : public VulkanEngine
+class RGEngine : public VulkanEngine
 {
   public:
     void init() override;

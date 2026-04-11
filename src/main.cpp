@@ -1,10 +1,10 @@
-#include <PBREngine.h>
+#include <RGEngine.h>
 
 int main(int argc, char *argv[])
 {
 
     // switch from vulkan engine to pbr engine for inheritance hierarchy
-    PBREngine engine;
+    RGEngine engine;
 
     engine.init();
 

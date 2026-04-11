@@ -24,8 +24,8 @@ add_executable (engine
   sgraph/IScenegraph.h
   sgraph/Scenegraph.h
   sgraph/Scenegraph.cpp
-  PBREngine.h
-  PBREngine.cpp
+  RGEngine.h
+  RGEngine.cpp
   rgraph/IFeature.h
   rgraph/Rendergraph.h
   rgraph/Rendergraph.cpp
