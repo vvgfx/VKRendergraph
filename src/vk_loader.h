@@ -9,7 +9,7 @@
 #include <vk_types.h>
 
 // importing PBEngine gives me circular dependency issues,so forward declaring this for now.
-struct GLTFMRMaterialSystem;
+struct MaterialSystem;
 
 // This holds the material data for one submesh (GeoSurface) (Color image, metallic-roughness image, AllocatedBuffer
 // pointer and offets for the material constants like color-factor and metallic-roughness-factor)
@@ -50,7 +50,7 @@ struct GLTFCreatorData
     AllocatedImage loadErrorImage;
     AllocatedImage defaultImage;
     VkSampler _defaultSamplerLinear;
-    GLTFMRMaterialSystem *materialSystemReference;
+    MaterialSystem *materialSystemReference;
 };
 
 // lighting data

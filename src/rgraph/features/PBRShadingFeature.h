@@ -17,12 +17,10 @@ namespace rgraph
     class PBRShadingFeature : public IFeature
     {
       public:
-        PBRShadingFeature(DrawContext &drwCtx, VkDevice _device, GLTFMRMaterialSystemCreateInfo &materialSystemCreateInfo, GPUSceneData &sceneData,
+        PBRShadingFeature(DrawContext &drwCtx, VkDevice _device, MaterialSystemCreateInfo &materialSystemCreateInfo, GPUSceneData &sceneData,
                           VkDescriptorSetLayout gpuSceneLayout, DeletionQueue &delQueue);
 
         void Register(Rendergraph *builder) override;
-
-        std::shared_ptr<GLTFMRMaterialSystem> getMaterialSystemReference();
 
       private:
         // lighting data struct.
@@ -39,11 +37,11 @@ namespace rgraph
             int numLights;
         };
 
-        void createPipelines(GLTFMRMaterialSystemCreateInfo &materialSystemCreateInfo);
+        void createPipelines(MaterialSystemCreateInfo &materialSystemCreateInfo);
         // execution lambdas for run.
         void renderScene(PassExecution &passExec);
 
-        std::shared_ptr<GLTFMRMaterialSystem> materialSystem;
+        std::shared_ptr<MaterialSystem> materialSystem;
 
         MaterialPipeline opaquePipeline;
         MaterialPipeline transparentPipeline;

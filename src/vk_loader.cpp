@@ -148,11 +148,10 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
         }
     }
 
-    file.materialDataBuffer = gpuResourceAllocator.create_buffer(sizeof(GLTFMRMaterialSystem::MaterialConstants) * gltf.materials.size(),
+    file.materialDataBuffer = gpuResourceAllocator.create_buffer(sizeof(MaterialSystem::MaterialConstants) * gltf.materials.size(),
                                                                  VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
     int data_index = 0;
-    GLTFMRMaterialSystem::MaterialConstants *sceneMaterialConstants =
-        (GLTFMRMaterialSystem::MaterialConstants *)file.materialDataBuffer.info.pMappedData;
+    MaterialSystem::MaterialConstants *sceneMaterialConstants = (MaterialSystem::MaterialConstants *)file.materialDataBuffer.info.pMappedData;
 
     for (fastgltf::Material &mat : gltf.materials)
     {
@@ -160,7 +159,7 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
         materials.push_back(newMat);
         file.materials[mat.name.c_str()] = newMat;
 
-        GLTFMRMaterialSystem::MaterialConstants constants;
+        MaterialSystem::MaterialConstants constants;
         constants.colorFactors.x = mat.pbrData.baseColorFactor[0];
         constants.colorFactors.y = mat.pbrData.baseColorFactor[1];
         constants.colorFactors.z = mat.pbrData.baseColorFactor[2];
@@ -177,7 +176,7 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
             passType = MaterialPass::Transparent;
         }
 
-        GLTFMRMaterialSystem::MaterialResources materialResources;
+        MaterialSystem::MaterialResources materialResources;
         // default the material textures
         materialResources.colorImage = creatorData.defaultImage;
         materialResources.colorSampler = creatorData._defaultSamplerLinear;
@@ -186,7 +185,7 @@ std::optional<std::shared_ptr<sgraph::GLTFScene>> loadGltf(GLTFCreatorData creat
 
         // set the uniform buffer for the material data
         materialResources.dataBuffer = file.materialDataBuffer.buffer;
-        materialResources.dataBufferOffset = data_index * sizeof(GLTFMRMaterialSystem::MaterialConstants);
+        materialResources.dataBufferOffset = data_index * sizeof(MaterialSystem::MaterialConstants);
         // grab textures from gltf file
         if (mat.pbrData.baseColorTexture.has_value())
         {

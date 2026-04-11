@@ -2,7 +2,7 @@
 #include "vk_descriptors.h"
 #include "vk_types.h"
 
-struct GLTFMRMaterialSystemCreateInfo
+struct MaterialSystemCreateInfo
 {
     VkDevice _device;
     VkFormat colorFormat, depthFormat;
@@ -12,7 +12,7 @@ struct GLTFMRMaterialSystemCreateInfo
 };
 
 // GLTF Metalllic-Roughness material system.
-struct GLTFMRMaterialSystem
+struct MaterialSystem
 {
     VkDescriptorSetLayout materialLayout;
 

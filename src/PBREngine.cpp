@@ -39,7 +39,7 @@ void PBREngine::init()
 
     VkExtent3D extent = {_windowExtent.width, _windowExtent.height, 1};
     computeFeature = std::make_shared<rgraph::ComputeBackgroundFeature>(_device, _mainDeletionQueue, extent, _drawImage);
-    GLTFMRMaterialSystemCreateInfo msCreateInfo = {_device, _drawImage.imageFormat, _depthImage.imageFormat, _gpuSceneDataDescriptorLayout};
+    MaterialSystemCreateInfo msCreateInfo = {_device, _drawImage.imageFormat, _depthImage.imageFormat, _gpuSceneDataDescriptorLayout};
     PBRFeature = std::make_shared<rgraph::PBRShadingFeature>(mainDrawContext, _device, msCreateInfo, sceneData, _gpuSceneDataDescriptorLayout,
                                                              _mainDeletionQueue);
 
@@ -69,7 +69,7 @@ void PBREngine::init_default_data()
 {
     VulkanEngine::init_default_data();
 
-    GLTFMRMaterialSystem::MaterialResources materialResources;
+    MaterialSystem::MaterialResources materialResources;
     // default the material textures
     materialResources.colorImage = _whiteImage;
     materialResources.colorSampler = _defaultSamplerLinear;
@@ -78,11 +78,11 @@ void PBREngine::init_default_data()
 
     GPUResourceAllocator _gpuResourceAllocator = GPUResourceAllocator::GetInstance();
     // set the uniform buffer for the material data
-    AllocatedBuffer materialConstants = _gpuResourceAllocator.create_buffer(sizeof(GLTFMRMaterialSystem::MaterialConstants),
+    AllocatedBuffer materialConstants = _gpuResourceAllocator.create_buffer(sizeof(MaterialSystem::MaterialConstants),
                                                                             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
     // write the buffer
-    GLTFMRMaterialSystem::MaterialConstants *sceneUniformData = (GLTFMRMaterialSystem::MaterialConstants *)materialConstants.info.pMappedData;
+    MaterialSystem::MaterialConstants *sceneUniformData = (MaterialSystem::MaterialConstants *)materialConstants.info.pMappedData;
     sceneUniformData->colorFactors = glm::vec4{1, 1, 1, 1};
     sceneUniformData->metal_rough_factors = glm::vec4{1, 0.5, 0, 0};
 

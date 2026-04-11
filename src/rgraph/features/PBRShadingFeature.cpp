@@ -18,12 +18,12 @@ VkSampleCountFlagBits rasterizationSamples = VK_SAMPLE_COUNT_8_BIT;
 // forward declaration for now, TODO: come back and move this function here. remove from VKEngine.
 bool is_visible(const RenderObject &obj, const glm::mat4 &viewproj);
 
-rgraph::PBRShadingFeature::PBRShadingFeature(DrawContext &drwCtx, VkDevice _device, GLTFMRMaterialSystemCreateInfo &materialSystemCreateInfo,
+rgraph::PBRShadingFeature::PBRShadingFeature(DrawContext &drwCtx, VkDevice _device, MaterialSystemCreateInfo &materialSystemCreateInfo,
                                              GPUSceneData &scnData, VkDescriptorSetLayout gpuSceneLayout, DeletionQueue &delQueue)
     : drawContext(drwCtx), sceneData(scnData)
 {
     _gpuSceneDataDescriptorLayout = gpuSceneLayout;
-    materialSystem = std::make_shared<GLTFMRMaterialSystem>();
+    materialSystem = std::make_shared<MaterialSystem>();
     materialSystem->build_descriptors(_device);
 
     // create descriptor set for lights.
@@ -60,11 +60,6 @@ void rgraph::PBRShadingFeature::Register(rgraph::Rendergraph *builder)
             pass.CreatesBuffer("lightBuffer", sizeof(LightData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         },
         [&](PassExecution &passExec) { renderScene(passExec); });
-}
-
-std::shared_ptr<GLTFMRMaterialSystem> rgraph::PBRShadingFeature::getMaterialSystemReference()
-{
-    return materialSystem;
 }
 
 void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
@@ -210,7 +205,7 @@ void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
     }
 }
 
-void rgraph::PBRShadingFeature::createPipelines(GLTFMRMaterialSystemCreateInfo &info)
+void rgraph::PBRShadingFeature::createPipelines(MaterialSystemCreateInfo &info)
 {
     VkShaderModule meshFragShader;
     if (!vkutil::load_shader_module("../shaders/light_mesh.frag.spv", info._device, &meshFragShader))

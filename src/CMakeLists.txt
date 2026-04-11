@@ -33,6 +33,8 @@ add_executable (engine
   rgraph/features/PBRShadingFeature.cpp
   rgraph/features/ComputeBackgroundFeature.h
   rgraph/features/ComputeBackgroundFeature.cpp
+  rgraph/features/DeferredRenderingFeature.h
+  rgraph/features/DeferredRenderingFeature.cpp
   MaterialSystem.h
   MaterialSystem.cpp
 )

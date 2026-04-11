@@ -12,7 +12,7 @@
 class PBREngine : public VulkanEngine
 {
   public:
-    GLTFMRMaterialSystem materialSystemInstance;
+    MaterialSystem materialSystemInstance;
     void init() override;
 
   protected:

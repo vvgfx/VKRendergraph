@@ -1,6 +1,6 @@
 #include "MaterialSystem.h"
 
-void GLTFMRMaterialSystem::build_descriptors(VkDevice device)
+void MaterialSystem::build_descriptors(VkDevice device)
 {
 
     DescriptorLayoutBuilder layoutBuilder;
@@ -11,8 +11,8 @@ void GLTFMRMaterialSystem::build_descriptors(VkDevice device)
     materialLayout = layoutBuilder.build(device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 }
 
-MaterialInstance GLTFMRMaterialSystem::write_material(VkDevice device, MaterialPass pass, const MaterialResources &resources,
-                                                      DescriptorAllocatorGrowable &descriptorAllocator)
+MaterialInstance MaterialSystem::write_material(VkDevice device, MaterialPass pass, const MaterialResources &resources,
+                                                DescriptorAllocatorGrowable &descriptorAllocator)
 {
     MaterialInstance matData;
     matData.passType = pass;
@@ -31,7 +31,7 @@ MaterialInstance GLTFMRMaterialSystem::write_material(VkDevice device, MaterialP
     return matData;
 }
 
-void GLTFMRMaterialSystem::clear_resources(VkDevice device)
+void MaterialSystem::clear_resources(VkDevice device)
 {
     vkDestroyDescriptorSetLayout(device, materialLayout, nullptr);
 }
