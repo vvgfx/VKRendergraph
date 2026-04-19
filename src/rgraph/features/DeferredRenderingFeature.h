@@ -58,5 +58,7 @@ namespace rgraph
 
         DrawContext &drawContext;
         GPUSceneData &gpuSceneData;
+
+        VkSampler defaultSampler;
     };
 } // namespace rgraph

@@ -5,7 +5,10 @@
 #include "vk_engine.h"
 #include "vk_initializers.h"
 #include "vk_pipelines.h"
+#include <algorithm>
 #include <vulkan/vulkan_core.h>
+
+bool is_visible(const RenderObject &obj, const glm::mat4 &viewproj);
 
 rgraph::DeferredRenderingFeature::DeferredRenderingFeature(DrawContext &drawContext, VkDevice _device, GPUSceneData &gpuSceneData,
                                                            VkDescriptorSetLayout gpuSceneLayout, MaterialSystemCreateInfo &materialSystemCreateInfo,
@@ -19,6 +22,16 @@ rgraph::DeferredRenderingFeature::DeferredRenderingFeature(DrawContext &drawCont
         DescriptorLayoutBuilder layoutBuilder;
         layoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         lightDescriptorSetLayout = layoutBuilder.build(_device, VK_SHADER_STAGE_FRAGMENT_BIT);
+    }
+
+    // default sampler - nearest
+    {
+        VkSamplerCreateInfo sampl = {.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+
+        sampl.magFilter = VK_FILTER_NEAREST;
+        sampl.minFilter = VK_FILTER_NEAREST;
+
+        vkCreateSampler(_device, &sampl, nullptr, &defaultSampler);
     }
 
     // descriptor set for composite pass inputs.
@@ -39,6 +52,7 @@ rgraph::DeferredRenderingFeature::DeferredRenderingFeature(DrawContext &drawCont
     delQueue.push_function(
         [_device, this]()
         {
+            vkDestroySampler(_device, defaultSampler, nullptr);
             vkDestroyDescriptorSetLayout(_device, lightDescriptorSetLayout, nullptr);
             vkDestroyDescriptorSetLayout(_device, compDescriptorSetLayout, nullptr);
             vkDestroyPipelineLayout(_device, geometryPipeline.layout, nullptr);
@@ -88,10 +102,171 @@ void rgraph::DeferredRenderingFeature::Register(rgraph::Rendergraph *builder)
 
 void rgraph::DeferredRenderingFeature::geometryPass(rgraph::PassExecution &passExec)
 {
+    passExec.drawCalls = 0;
+    passExec.triangles = 0;
+
+    std::vector<uint32_t> opaque_draws;
+    opaque_draws.reserve(drawContext.OpaqueSurfaces.size());
+    for (int i = 0; i < drawContext.OpaqueSurfaces.size(); i++)
+    {
+        if (is_visible(drawContext.OpaqueSurfaces[i], gpuSceneData.viewproj))
+        {
+            opaque_draws.push_back(i);
+        }
+    }
+
+    std::sort(opaque_draws.begin(), opaque_draws.end(),
+              [&](const auto &iA, const auto &iB)
+              {
+                  const RenderObject &A = drawContext.OpaqueSurfaces[iA];
+                  const RenderObject &B = drawContext.OpaqueSurfaces[iB];
+                  if (A.material == B.material)
+                  {
+                      return A.indexBuffer < B.indexBuffer;
+                  }
+                  else
+                  {
+                      return A.material < B.material;
+                  }
+              });
+
+    AllocatedBuffer gpuSceneDataBuffer = passExec.allocatedBuffers["gpuSceneBuffer"];
+    GPUSceneData *sceneUniformData = (GPUSceneData *)gpuSceneDataBuffer.info.pMappedData;
+    *sceneUniformData = gpuSceneData;
+
+    VkDescriptorSet globalDescriptor = passExec.frameDescriptor->allocate(passExec._device, _gpuSceneDataDescriptorLayout);
+    DescriptorWriter writer;
+    writer.write_buffer(0, gpuSceneDataBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    writer.update_set(passExec._device, globalDescriptor);
+
+    vkCmdBindPipeline(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, geometryPipeline.pipeline);
+    vkCmdBindDescriptorSets(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, geometryPipeline.layout, 0, 1, &globalDescriptor, 0, nullptr);
+
+    VkViewport viewport = {};
+    viewport.x = 0;
+    viewport.y = 0;
+    viewport.width = (float)passExec._drawExtent.width;
+    viewport.height = (float)passExec._drawExtent.height;
+    viewport.minDepth = 0.f;
+    viewport.maxDepth = 1.f;
+    vkCmdSetViewport(passExec.cmd, 0, 1, &viewport);
+
+    VkRect2D scissor = {};
+    scissor.offset.x = 0;
+    scissor.offset.y = 0;
+    scissor.extent.width = passExec._drawExtent.width;
+    scissor.extent.height = passExec._drawExtent.height;
+    vkCmdSetScissor(passExec.cmd, 0, 1, &scissor);
+
+    MaterialInstance *lastMaterial = nullptr;
+    VkBuffer lastIndexBuffer = VK_NULL_HANDLE;
+
+    for (auto &r : opaque_draws)
+    {
+        const RenderObject &obj = drawContext.OpaqueSurfaces[r];
+
+        if (obj.material != lastMaterial)
+        {
+            lastMaterial = obj.material;
+            vkCmdBindDescriptorSets(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, geometryPipeline.layout, 1, 1, &obj.material->materialSet, 0,
+                                    nullptr);
+        }
+
+        if (obj.indexBuffer != lastIndexBuffer)
+        {
+            lastIndexBuffer = obj.indexBuffer;
+            vkCmdBindIndexBuffer(passExec.cmd, obj.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        }
+
+        GPUDrawPushConstants push_constants;
+        push_constants.modelMatrix = obj.modelMatrix;
+        push_constants.vertexBuffer = obj.vertexBufferAddress;
+
+        vkCmdPushConstants(passExec.cmd, geometryPipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
+
+        vkCmdDrawIndexed(passExec.cmd, obj.indexCount, 1, obj.firstIndex, 0, 0);
+
+        passExec.drawCalls++;
+        passExec.triangles += (int)(obj.indexCount / 3);
+    }
 }
 
 void rgraph::DeferredRenderingFeature::compositePass(rgraph::PassExecution &passExec)
 {
+    passExec.drawCalls = 0;
+    passExec.triangles = 0;
+
+    // Scene data
+    AllocatedBuffer gpuSceneDataBuffer = passExec.allocatedBuffers["gpuSceneBuffer"];
+    GPUSceneData *sceneUniformData = (GPUSceneData *)gpuSceneDataBuffer.info.pMappedData;
+    *sceneUniformData = gpuSceneData;
+
+    VkDescriptorSet sceneDescriptor = passExec.frameDescriptor->allocate(passExec._device, _gpuSceneDataDescriptorLayout);
+    {
+        DescriptorWriter writer;
+        writer.write_buffer(0, gpuSceneDataBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        writer.update_set(passExec._device, sceneDescriptor);
+    }
+
+    // Light data
+    AllocatedBuffer lightAllocBuffer = passExec.allocatedBuffers["lightBuffer"];
+    LightData *lightdata = (LightData *)lightAllocBuffer.info.pMappedData;
+    lightdata->numLights = drawContext.lights.size();
+    for (int i = 0; i < lightdata->numLights; i++)
+    {
+        PointLight pl = {};
+        pl.color = drawContext.lights[i].color;
+        pl.transform = drawContext.lights[i].transform;
+        pl.intensity = drawContext.lights[i].intensity;
+        lightdata->pointLights[i] = pl;
+    }
+
+    VkDescriptorSet lightDescriptor = passExec.frameDescriptor->allocate(passExec._device, lightDescriptorSetLayout);
+    {
+        DescriptorWriter writer;
+        writer.write_buffer(0, lightAllocBuffer.buffer, sizeof(LightData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        writer.update_set(passExec._device, lightDescriptor);
+    }
+
+    // G-buffer sampler descriptors
+    VkDescriptorSet compDescriptor = passExec.frameDescriptor->allocate(passExec._device, compDescriptorSetLayout);
+    {
+        DescriptorWriter writer;
+        writer.write_image(0, position_gbuf.imageView, defaultSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        writer.write_image(1, normal_gbuf.imageView, defaultSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        writer.write_image(2, albedo_gbuf.imageView, defaultSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        writer.write_image(3, metalrough_gbuf.imageView, defaultSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        writer.update_set(passExec._device, compDescriptor);
+    }
+
+    vkCmdBindPipeline(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, compositePipeline.pipeline);
+
+    VkDescriptorSet sets[] = {compDescriptor, sceneDescriptor, lightDescriptor};
+    vkCmdBindDescriptorSets(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, compositePipeline.layout, 0, 3, sets, 0, nullptr);
+
+    VkViewport viewport = {};
+    viewport.x = 0;
+    viewport.y = 0;
+    viewport.width = (float)passExec._drawExtent.width;
+    viewport.height = (float)passExec._drawExtent.height;
+    viewport.minDepth = 0.f;
+    viewport.maxDepth = 1.f;
+    vkCmdSetViewport(passExec.cmd, 0, 1, &viewport);
+
+    VkRect2D scissor = {};
+    scissor.offset.x = 0;
+    scissor.offset.y = 0;
+    scissor.extent.width = passExec._drawExtent.width;
+    scissor.extent.height = passExec._drawExtent.height;
+    vkCmdSetScissor(passExec.cmd, 0, 1, &scissor);
+
+    vkCmdDraw(passExec.cmd, 3, 1, 0, 0);
+
+    passExec.drawCalls++;
 }
 
 void rgraph::DeferredRenderingFeature::createPipelines(MaterialSystemCreateInfo &materialSystemCreateInfo)
