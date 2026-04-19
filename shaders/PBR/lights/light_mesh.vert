@@ -12,7 +12,6 @@ layout(location = 3) out vec4 outPos;
 
 struct Vertex
 {
-
     vec3 position;
     float uv_x;
     vec3 normal;
@@ -28,7 +27,7 @@ layout(buffer_reference, std430) readonly buffer VertexBuffer
 // push constants block
 layout(push_constant) uniform constants
 {
-    mat4 render_matrix;
+    mat4 modelMatrix;
     VertexBuffer vertexBuffer;
 }
 PushConstants;
@@ -40,10 +39,10 @@ void main()
     vec4 position = vec4(v.position, 1.0f);
 
     // writing outPos here.
-    outPos = PushConstants.render_matrix * position;
+    outPos = PushConstants.modelMatrix * position;
     gl_Position = sceneData.viewproj * outPos;
 
-    outNormal = (PushConstants.render_matrix * vec4(v.normal, 0.f)).xyz;
+    outNormal = (PushConstants.modelMatrix * vec4(v.normal, 0.f)).xyz;
     outColor = v.color.xyz * materialData.colorFactors.xyz;
     outUV.x = v.uv_x;
     outUV.y = v.uv_y;

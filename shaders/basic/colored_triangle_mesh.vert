@@ -6,7 +6,6 @@ layout(location = 1) out vec2 outUV;
 
 struct Vertex
 {
-
     vec3 position;
     float uv_x;
     vec3 normal;
@@ -22,7 +21,7 @@ layout(buffer_reference, std430) readonly buffer VertexBuffer
 // push constants block
 layout(push_constant) uniform constants
 {
-    mat4 render_matrix;
+    mat4 modelMatrix;
     VertexBuffer vertexBuffer;
 }
 PushConstants;
@@ -33,7 +32,7 @@ void main()
     Vertex v = PushConstants.vertexBuffer.vertices[gl_VertexIndex];
 
     // output data
-    gl_Position = PushConstants.render_matrix * vec4(v.position, 1.0f);
+    gl_Position = PushConstants.modelMatrix * vec4(v.position, 1.0f);
     outColor = v.color.xyz;
     outUV.x = v.uv_x;
     outUV.y = v.uv_y;
