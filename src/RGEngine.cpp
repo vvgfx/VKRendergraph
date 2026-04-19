@@ -2,6 +2,7 @@
 #include "MaterialSystem.h"
 #include "imgui.h"
 #include "rgraph/features/ComputeBackgroundFeature.h"
+#include "rgraph/features/DeferredRenderingFeature.h"
 #include "rgraph/features/PBRShadingFeature.h"
 #include "vk_engine.h"
 #include "vk_images.h"
@@ -37,12 +38,16 @@ void RGEngine::init()
 
     structureFile.value()->name = "outpost";
 
+    builder.Init(_device, _drawImage.imageExtent);
+
     VkExtent3D extent = {_windowExtent.width, _windowExtent.height, 1};
     computeFeature = std::make_shared<rgraph::ComputeBackgroundFeature>(_device, _mainDeletionQueue, extent, _drawImage);
     MaterialSystemCreateInfo msCreateInfo = {_device, _drawImage.imageFormat, _depthImage.imageFormat, _gpuSceneDataDescriptorLayout};
     PBRFeature = std::make_shared<rgraph::PBRShadingFeature>(mainDrawContext, _device, msCreateInfo, sceneData, _gpuSceneDataDescriptorLayout,
                                                              _mainDeletionQueue);
 
+    deferredFeature = std::make_shared<rgraph::DeferredRenderingFeature>(mainDrawContext, _device, sceneData, _gpuSceneDataDescriptorLayout,
+                                                                         msCreateInfo, _mainDeletionQueue);
     // create MSAA images. TODO: move these out somewhere later.
     createMsaaImages();
 
@@ -51,9 +56,9 @@ void RGEngine::init()
     builder.AddTrackedImage("msaaColor", VK_IMAGE_LAYOUT_UNDEFINED, msaaColor);
     builder.AddTrackedImage("msaaDepth", VK_IMAGE_LAYOUT_UNDEFINED, msaaDepth);
 
-    builder.Init(_device, _drawImage.imageExtent);
     builder.AddFeature(computeFeature);
-    builder.AddFeature(PBRFeature);
+    // builder.AddFeature(PBRFeature);
+    builder.AddFeature(deferredFeature);
 
     builder.SetTimestampPeriod(timestampPeriod);
 }

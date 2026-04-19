@@ -2,6 +2,7 @@
 
 #include "rgraph/Rendergraph.h"
 #include "rgraph/features/ComputeBackgroundFeature.h"
+#include "rgraph/features/DeferredRenderingFeature.h"
 #include "rgraph/features/PBRShadingFeature.h"
 #include <memory>
 #include <vk_descriptors.h>
@@ -33,6 +34,7 @@ class RGEngine : public VulkanEngine
     rgraph::Rendergraph builder;
     std::shared_ptr<rgraph::ComputeBackgroundFeature> computeFeature;
     std::shared_ptr<rgraph::PBRShadingFeature> PBRFeature;
+    std::shared_ptr<rgraph::DeferredRenderingFeature> deferredFeature;
 
     // AllocatedImages for MSAA. TODO: Move these out later.
     AllocatedImage msaaColor;

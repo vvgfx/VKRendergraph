@@ -379,6 +379,7 @@ void rgraph::Rendergraph::Init(VkDevice _device, VkExtent3D _extent)
     }
     this->_device = _device;
     this->_extent = _extent;
+    instance = this;
 }
 
 rgraph::Rendergraph &rgraph::Rendergraph::Instance()
