@@ -179,7 +179,7 @@ void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
         }
         // calculate final mesh matrix
         GPUDrawPushConstants push_constants;
-        push_constants.worldMatrix = r.transform;
+        push_constants.modelMatrix = r.modelMatrix;
         push_constants.vertexBuffer = r.vertexBufferAddress;
 
         vkCmdPushConstants(passExec.cmd, lastPipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);

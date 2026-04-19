@@ -14,7 +14,7 @@ void sgraph::MeshNode::Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
         def.indexBuffer = mesh->meshBuffers.indexBuffer.buffer;
         def.material = &s.material->data;
         def.bounds = s.bounds;
-        def.transform = nodeMatrix;
+        def.modelMatrix = nodeMatrix;
         def.vertexBufferAddress = mesh->meshBuffers.vertexBufferAddress;
 
         if (s.material->data.passType == MaterialPass::Transparent)
@@ -38,7 +38,7 @@ bool is_visible(const RenderObject &obj, const glm::mat4 &viewproj)
         glm::vec3{-1, 1, 1}, glm::vec3{-1, 1, -1}, glm::vec3{-1, -1, 1}, glm::vec3{-1, -1, -1},
     };
 
-    glm::mat4 matrix = viewproj * obj.transform;
+    glm::mat4 matrix = viewproj * obj.modelMatrix;
 
     glm::vec3 min = {1.5, 1.5, 1.5};
     glm::vec3 max = {-1.5, -1.5, -1.5};

@@ -5,7 +5,6 @@
 #include "glm/ext/vector_float3.hpp"
 #include "vk_engine.h"
 #include "vk_types.h"
-#include <memory>
 
 namespace rgraph
 {

@@ -192,7 +192,19 @@ void VulkanEngine::init_swapchain()
         {
             auto _gpuResourceAllocator = GPUResourceAllocator::Instance();
             vkDestroyImageView(_device, _drawImage.imageView, nullptr);
-            _gpuResourceAllocator.destroy_image(_drawImage.image, _drawImage.allocation);
+            _gpuResourceAllocator.destroy_image(
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                _drawImage.image, _drawImage.allocation);
 
             vkDestroyImageView(_device, _depthImage.imageView, nullptr);
             _gpuResourceAllocator.destroy_image(_depthImage.image, _depthImage.allocation);

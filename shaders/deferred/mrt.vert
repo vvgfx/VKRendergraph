@@ -3,11 +3,12 @@
 #extension GL_GOOGLE_include_directive : require
 #extension GL_EXT_buffer_reference : require
 
-#include "input_structures.glsl"
+#include "mrt_input_structures.glsl"
 
 layout(location = 0) out vec3 outNormal;
 layout(location = 1) out vec3 outColor;
 layout(location = 2) out vec2 outUV;
+layout(location = 3) out vec3 outPosition;
 
 struct Vertex
 {
@@ -39,7 +40,11 @@ void main()
 
     gl_Position = sceneData.viewproj * PushConstants.modelMatrix * position;
 
+    outPosition = (PushConstants.modelMatrix * position).xyz;
+
     outNormal = (PushConstants.modelMatrix * vec4(v.normal, 0.f)).xyz;
+
+    // color is always 1, I can probably remove this.
     outColor = v.color.xyz * materialData.colorFactors.xyz;
     outUV.x = v.uv_x;
     outUV.y = v.uv_y;
