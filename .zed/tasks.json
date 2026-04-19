@@ -47,4 +47,10 @@
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
   },
+  {
+    "label": "Clean Shaders",
+    "command": "find shaders -name '*.spv' -delete",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+  },
 ]

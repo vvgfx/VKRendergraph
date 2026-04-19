@@ -57,8 +57,10 @@ rgraph::DeferredRenderingFeature::DeferredRenderingFeature(DrawContext &drawCont
             vkDestroyDescriptorSetLayout(_device, compDescriptorSetLayout, nullptr);
             vkDestroyPipelineLayout(_device, geometryPipeline.layout, nullptr);
             vkDestroyPipelineLayout(_device, compositePipeline.layout, nullptr);
+            vkDestroyPipelineLayout(_device, transparentPipeline.layout, nullptr);
             vkDestroyPipeline(_device, geometryPipeline.pipeline, nullptr);
             vkDestroyPipeline(_device, compositePipeline.pipeline, nullptr);
+            vkDestroyPipeline(_device, transparentPipeline.pipeline, nullptr);
         });
 }
 
@@ -98,6 +100,17 @@ void rgraph::DeferredRenderingFeature::Register(rgraph::Rendergraph *builder)
             pass.CreatesBuffer("gpuSceneBuffer", sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         },
         [&](PassExecution &passExec) { compositePass(passExec); });
+
+    builder->AddGraphicsPass(
+        "Transparent Forward Pass",
+        [](Pass &pass)
+        {
+            pass.AddColorAttachment("drawImage", false, nullptr);
+            pass.AddDepthStencilAttachment("depth_gbuf", true, nullptr);
+            pass.CreatesBuffer("gpuSceneBuffer", sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+            pass.CreatesBuffer("lightBuffer", sizeof(LightData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        },
+        [&](PassExecution &passExec) { transparentPass(passExec); });
 }
 
 void rgraph::DeferredRenderingFeature::geometryPass(rgraph::PassExecution &passExec)
@@ -269,6 +282,96 @@ void rgraph::DeferredRenderingFeature::compositePass(rgraph::PassExecution &pass
     passExec.drawCalls++;
 }
 
+void rgraph::DeferredRenderingFeature::transparentPass(rgraph::PassExecution &passExec)
+{
+    if (drawContext.TransparentSurfaces.empty())
+    {
+        return;
+    }
+
+    // Scene data
+    AllocatedBuffer gpuSceneDataBuffer = passExec.allocatedBuffers["gpuSceneBuffer"];
+    GPUSceneData *sceneUniformData = (GPUSceneData *)gpuSceneDataBuffer.info.pMappedData;
+    *sceneUniformData = gpuSceneData;
+
+    VkDescriptorSet sceneDescriptor = passExec.frameDescriptor->allocate(passExec._device, _gpuSceneDataDescriptorLayout);
+    {
+        DescriptorWriter writer;
+        writer.write_buffer(0, gpuSceneDataBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        writer.update_set(passExec._device, sceneDescriptor);
+    }
+
+    // Light data
+    AllocatedBuffer lightAllocBuffer = passExec.allocatedBuffers["lightBuffer"];
+    LightData *lightdata = (LightData *)lightAllocBuffer.info.pMappedData;
+    lightdata->numLights = drawContext.lights.size();
+    for (int i = 0; i < lightdata->numLights; i++)
+    {
+        PointLight pl = {};
+        pl.color = drawContext.lights[i].color;
+        pl.transform = drawContext.lights[i].transform;
+        pl.intensity = drawContext.lights[i].intensity;
+        lightdata->pointLights[i] = pl;
+    }
+
+    VkDescriptorSet lightDescriptor = passExec.frameDescriptor->allocate(passExec._device, lightDescriptorSetLayout);
+    {
+        DescriptorWriter writer;
+        writer.write_buffer(0, lightAllocBuffer.buffer, sizeof(LightData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        writer.update_set(passExec._device, lightDescriptor);
+    }
+
+    vkCmdBindPipeline(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, transparentPipeline.pipeline);
+
+    VkDescriptorSet sets[] = {sceneDescriptor, lightDescriptor};
+    vkCmdBindDescriptorSets(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, transparentPipeline.layout, 0, 2, sets, 0, nullptr);
+
+    VkViewport viewport = {};
+    viewport.x = 0;
+    viewport.y = 0;
+    viewport.width = (float)passExec._drawExtent.width;
+    viewport.height = (float)passExec._drawExtent.height;
+    viewport.minDepth = 0.f;
+    viewport.maxDepth = 1.f;
+    vkCmdSetViewport(passExec.cmd, 0, 1, &viewport);
+
+    VkRect2D scissor = {};
+    scissor.offset.x = 0;
+    scissor.offset.y = 0;
+    scissor.extent.width = passExec._drawExtent.width;
+    scissor.extent.height = passExec._drawExtent.height;
+    vkCmdSetScissor(passExec.cmd, 0, 1, &scissor);
+
+    MaterialInstance *lastMaterial = nullptr;
+    VkBuffer lastIndexBuffer = VK_NULL_HANDLE;
+
+    for (auto &r : drawContext.TransparentSurfaces)
+    {
+        if (r.material != lastMaterial)
+        {
+            lastMaterial = r.material;
+            vkCmdBindDescriptorSets(passExec.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, transparentPipeline.layout, 2, 1, &r.material->materialSet, 0,
+                                    nullptr);
+        }
+
+        if (r.indexBuffer != lastIndexBuffer)
+        {
+            lastIndexBuffer = r.indexBuffer;
+            vkCmdBindIndexBuffer(passExec.cmd, r.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        }
+
+        GPUDrawPushConstants push_constants;
+        push_constants.modelMatrix = r.modelMatrix;
+        push_constants.vertexBuffer = r.vertexBufferAddress;
+        vkCmdPushConstants(passExec.cmd, transparentPipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &push_constants);
+
+        vkCmdDrawIndexed(passExec.cmd, r.indexCount, 1, r.firstIndex, 0, 0);
+
+        passExec.drawCalls++;
+        passExec.triangles += (int)(r.indexCount / 3);
+    }
+}
+
 void rgraph::DeferredRenderingFeature::createPipelines(MaterialSystemCreateInfo &materialSystemCreateInfo)
 {
 
@@ -365,6 +468,46 @@ void rgraph::DeferredRenderingFeature::createPipelines(MaterialSystemCreateInfo 
     pipelineBuilder._pipelineLayout = compPipelineLayout;
 
     compositePipeline.pipeline = pipelineBuilder.build_pipeline(materialSystemCreateInfo._device);
+
+    vkDestroyShaderModule(materialSystemCreateInfo._device, meshVertexShader, nullptr);
+    vkDestroyShaderModule(materialSystemCreateInfo._device, meshFragShader, nullptr);
+
+    // Transparent forward pipeline -----------------------------
+
+    if (!vkutil::load_shader_module("../shaders/PBR/lights/light_mesh.vert.spv", materialSystemCreateInfo._device, &meshVertexShader))
+    {
+        fmt::println("Error when building the transparent vertex shader module\n");
+    }
+    if (!vkutil::load_shader_module("../shaders/PBR/lights/light_mesh.frag.spv", materialSystemCreateInfo._device, &meshFragShader))
+    {
+        fmt::println("Error when building the transparent fragment shader module\n");
+    }
+
+    VkDescriptorSetLayout transparentLayouts[] = {materialSystemCreateInfo._gpuSceneDataDescriptorLayout, lightDescriptorSetLayout, materialLayout};
+
+    meshLayoutInfo.setLayoutCount = 3;
+    meshLayoutInfo.pSetLayouts = transparentLayouts;
+    meshLayoutInfo.pPushConstantRanges = &matrixRange;
+    meshLayoutInfo.pushConstantRangeCount = 1;
+
+    VkPipelineLayout transparentPipelineLayout;
+    VK_CHECK(vkCreatePipelineLayout(materialSystemCreateInfo._device, &meshLayoutInfo, nullptr, &transparentPipelineLayout));
+
+    transparentPipeline.layout = transparentPipelineLayout;
+
+    pipelineBuilder.clear();
+    pipelineBuilder.set_shaders(meshVertexShader, meshFragShader);
+    pipelineBuilder.set_input_topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    pipelineBuilder.set_polygon_mode(VK_POLYGON_MODE_FILL);
+    pipelineBuilder.set_cull_mode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
+    pipelineBuilder.set_multisampling_none();
+    pipelineBuilder.set_color_attachment_format(materialSystemCreateInfo.colorFormat);
+    pipelineBuilder.enable_blending_additive();
+    pipelineBuilder.enable_depthtest(false, VK_COMPARE_OP_GREATER_OR_EQUAL);
+    pipelineBuilder.set_depth_format(materialSystemCreateInfo.depthFormat);
+    pipelineBuilder._pipelineLayout = transparentPipelineLayout;
+
+    transparentPipeline.pipeline = pipelineBuilder.build_pipeline(materialSystemCreateInfo._device);
 
     vkDestroyShaderModule(materialSystemCreateInfo._device, meshVertexShader, nullptr);
     vkDestroyShaderModule(materialSystemCreateInfo._device, meshFragShader, nullptr);

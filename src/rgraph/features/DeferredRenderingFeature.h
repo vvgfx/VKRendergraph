@@ -42,6 +42,8 @@ namespace rgraph
 
         void compositePass(PassExecution &passExec);
 
+        void transparentPass(PassExecution &passExec);
+
         // images
         AllocatedImage position_gbuf;
         AllocatedImage normal_gbuf;
@@ -55,6 +57,7 @@ namespace rgraph
 
         MaterialPipeline geometryPipeline;
         MaterialPipeline compositePipeline;
+        MaterialPipeline transparentPipeline;
 
         DrawContext &drawContext;
         GPUSceneData &gpuSceneData;
