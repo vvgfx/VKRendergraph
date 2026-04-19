@@ -34,6 +34,40 @@ rgraph::DeferredRenderingFeature::DeferredRenderingFeature(DrawContext &drawCont
 
 void rgraph::DeferredRenderingFeature::Register(rgraph::Rendergraph *builder)
 {
+
+    builder->AddGraphicsPass(
+        "Geometry Pass",
+        [](Pass &pass)
+        {
+            static VkClearValue colorClearValue{};
+            colorClearValue.color = {0.0f, 0.0f, 0.0f, 0.0f};
+            colorClearValue.depthStencil = {0.0f};
+            pass.AddColorAttachment("position_gbuf", true, &colorClearValue);
+            pass.AddColorAttachment("normal_gbuf", true, &colorClearValue);
+            pass.AddColorAttachment("albedo_gbuf", true, &colorClearValue);
+            pass.AddColorAttachment("metalrough_gbuf", true, &colorClearValue);
+            pass.AddDepthStencilAttachment("depth_gbuf", false, &colorClearValue);
+            pass.CreatesBuffer("gpuSceneBuffer", sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        },
+        [&](PassExecution &passExec) { geometryPass(passExec); });
+
+    builder->AddGraphicsPass(
+        "Composite Pass",
+        [](Pass &pass)
+        {
+            static VkClearValue colorClearValue{};
+            colorClearValue.color = {0.0f, 0.0f, 0.0f, 0.0f};
+            colorClearValue.depthStencil = {0.0f};
+            pass.ReadsImage("position_gbuf", VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            pass.ReadsImage("normal_gbuf", VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            pass.ReadsImage("albedo_gbuf", VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            pass.ReadsImage("metalrough_gbuf", VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            pass.AddColorAttachment("drawImage", false, &colorClearValue);
+            pass.AddDepthStencilAttachment("depth_gbuf", true, &colorClearValue);
+            pass.CreatesBuffer("lightBuffer", sizeof(LightData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+            pass.CreatesBuffer("gpuSceneBuffer", sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        },
+        [&](PassExecution &passExec) { compositePass(passExec); });
 }
 
 void rgraph::DeferredRenderingFeature::createPipelines(MaterialSystemCreateInfo &materialSystemCreateInfo)
@@ -132,4 +166,7 @@ void rgraph::DeferredRenderingFeature::createPipelines(MaterialSystemCreateInfo 
     pipelineBuilder._pipelineLayout = compPipelineLayout;
 
     compositePipeline.pipeline = pipelineBuilder.build_pipeline(materialSystemCreateInfo._device);
+
+    vkDestroyShaderModule(materialSystemCreateInfo._device, meshVertexShader, nullptr);
+    vkDestroyShaderModule(materialSystemCreateInfo._device, meshFragShader, nullptr);
 }

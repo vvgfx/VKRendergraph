@@ -20,9 +20,25 @@ namespace rgraph
         void Register(Rendergraph *builder) override;
 
       private:
+        // lighting data struct.
+        struct PointLight
+        {
+            glm::mat4 transform;
+            glm::vec3 color;
+            float intensity;
+        };
+
+        struct LightData
+        {
+            PointLight pointLights[25];
+            int numLights;
+        };
+
         void createPipelines(MaterialSystemCreateInfo &materialSystemCreateInfo);
         // execution lambdas for run.
-        void renderScene(PassExecution &passExec);
+        void geometryPass(PassExecution &passExec);
+
+        void compositePass(PassExecution &passExec);
 
         VkDescriptorSetLayout _gpuSceneDataDescriptorLayout;
         VkDescriptorSetLayout lightDescriptorSetLayout;
