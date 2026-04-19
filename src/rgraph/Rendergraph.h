@@ -143,7 +143,7 @@ namespace rgraph
 
         void AddFeature(std::weak_ptr<IFeature> feature);
 
-        void Init(VkDevice _device, VkExtent3D _extent);
+        void Init(VkDevice _device, VkExtent3D _extent, VkInstance _instance);
 
         // performance stuff.
         void SetTimestampPeriod(float period)
@@ -186,5 +186,11 @@ namespace rgraph
         vkutil::BarrierMerger barrierMerger;
 
         static Rendergraph *instance;
+
+        // https://github.com/achirkin/vulkan/issues/3
+        // I really don't like doing this, but it seems to be the only way?
+
+        PFN_vkCmdBeginDebugUtilsLabelEXT vkCmdBeginDebugUtilsLabelEXT = nullptr;
+        PFN_vkCmdEndDebugUtilsLabelEXT vkCmdEndDebugUtilsLabelEXT = nullptr;
     };
 } // namespace rgraph

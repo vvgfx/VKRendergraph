@@ -239,6 +239,10 @@ void rgraph::Rendergraph::Run(FrameData &frameData)
 
         const Pass &pass = passData[i];
 
+        VkDebugUtilsLabelEXT label = {.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT};
+        label.pLabelName = pass.name.c_str();
+        vkCmdBeginDebugUtilsLabelEXT(cmd, &label);
+
         vkCmdWriteTimestamp(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, queryPool, queryIndex);
         uint32_t startQuery = queryIndex++;
 
@@ -331,6 +335,8 @@ void rgraph::Rendergraph::Run(FrameData &frameData)
         vkCmdWriteTimestamp(cmd, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, queryPool, queryIndex);
         queryIndex++;
 
+        vkCmdEndDebugUtilsLabelEXT(cmd);
+
         // save timestamps for time queries later.
         passIndices.push_back({pass.name, startQuery});
 
@@ -371,7 +377,7 @@ void rgraph::Rendergraph::AddFeature(std::weak_ptr<IFeature> feature)
     features.emplace_back(feature);
 }
 
-void rgraph::Rendergraph::Init(VkDevice _device, VkExtent3D _extent)
+void rgraph::Rendergraph::Init(VkDevice _device, VkExtent3D _extent, VkInstance _instance)
 {
     if (instance != nullptr)
     {
@@ -380,6 +386,9 @@ void rgraph::Rendergraph::Init(VkDevice _device, VkExtent3D _extent)
     this->_device = _device;
     this->_extent = _extent;
     instance = this;
+
+    vkCmdBeginDebugUtilsLabelEXT = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(_instance, "vkCmdBeginDebugUtilsLabelEXT");
+    vkCmdEndDebugUtilsLabelEXT = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(_instance, "vkCmdEndDebugUtilsLabelEXT");
 }
 
 rgraph::Rendergraph &rgraph::Rendergraph::Instance()

@@ -38,7 +38,7 @@ void RGEngine::init()
 
     structureFile.value()->name = "outpost";
 
-    builder.Init(_device, _drawImage.imageExtent);
+    builder.Init(_device, _drawImage.imageExtent, _instance);
 
     VkExtent3D extent = {_windowExtent.width, _windowExtent.height, 1};
     computeFeature = std::make_shared<rgraph::ComputeBackgroundFeature>(_device, _mainDeletionQueue, extent, _drawImage);
