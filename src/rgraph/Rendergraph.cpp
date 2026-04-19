@@ -12,6 +12,8 @@
 #include <unordered_map>
 #include <utility>
 
+rgraph::Rendergraph *rgraph::Rendergraph::instance = nullptr;
+
 void rgraph::Pass::ReadsImage(const std::string name, VkImageLayout layout)
 {
     PassImageRead imageRead = {};
@@ -371,8 +373,21 @@ void rgraph::Rendergraph::AddFeature(std::weak_ptr<IFeature> feature)
 
 void rgraph::Rendergraph::Init(VkDevice _device, VkExtent3D _extent)
 {
+    if (instance != nullptr)
+    {
+        assert(true && "rendergraph has already been initialized");
+    }
     this->_device = _device;
     this->_extent = _extent;
+}
+
+rgraph::Rendergraph &rgraph::Rendergraph::Instance()
+{
+    if (instance)
+    {
+        return *instance;
+    }
+    throw(true && "Rendergraph has not been initialized yet!");
 }
 
 void rgraph::Pass::CreatesBuffer(const std::string name, size_t size, VkBufferUsageFlags usages)

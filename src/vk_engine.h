@@ -246,6 +246,16 @@ class VulkanEngine
         return materialSystemInstance;
     }
 
+    VkExtent2D GetWindowExtent()
+    {
+        return _windowExtent;
+    }
+
+    VkDevice GetVkDevice()
+    {
+        return _device;
+    }
+
     // scenegraph stuff
 
     DrawContext mainDrawContext;

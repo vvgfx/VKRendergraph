@@ -1,7 +1,7 @@
-layout(set = 0, binding = 1) uniform sampler2D inPosition;
-layout(set = 0, binding = 2) uniform sampler2D inNormal;
-layout(set = 0, binding = 3) uniform sampler2D inAlbedo;
-layout(set = 0, binding = 4) uniform sampler2D inMetalllicRoughness;
+layout(set = 0, binding = 0) uniform sampler2D inPosition;
+layout(set = 0, binding = 1) uniform sampler2D inNormal;
+layout(set = 0, binding = 2) uniform sampler2D inAlbedo;
+layout(set = 0, binding = 3) uniform sampler2D inMetalllicRoughness;
 
 layout(set = 1, binding = 0) uniform SceneData
 {

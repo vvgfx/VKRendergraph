@@ -162,7 +162,7 @@ void RGEngine::createMsaaImages()
     _mainDeletionQueue.push_function(
         [=, this]()
         {
-            auto _gpuResourceAllocator = GPUResourceAllocator::Instance();
+            auto &_gpuResourceAllocator = GPUResourceAllocator::Instance();
             vkDestroyImageView(_device, msaaColor.imageView, nullptr);
             _gpuResourceAllocator.destroy_image(msaaColor.image, msaaColor.allocation);
 

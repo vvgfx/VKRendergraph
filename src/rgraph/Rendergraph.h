@@ -161,6 +161,8 @@ namespace rgraph
             return totalGpuMs;
         }
 
+        static Rendergraph &Instance();
+
       private:
         std::vector<Pass> passData;
 
@@ -182,5 +184,7 @@ namespace rgraph
         float totalGpuMs = 0.0f;
 
         vkutil::BarrierMerger barrierMerger;
+
+        static Rendergraph *instance;
     };
 } // namespace rgraph
