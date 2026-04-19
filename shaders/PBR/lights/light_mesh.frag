@@ -27,7 +27,7 @@ void main()
     // if (!gl_FrontFacing)
     //     tempNormal = -tempNormal;
     viewVec = (normalize(sceneData.cameraPos - inPos)).xyz; // world space.
-    vec3 albedo = pow(texture(colorTex, vec2(inUV.s, inUV.t)).rgb, vec3(2.2)); // conversion from sRGB
+    vec3 albedo = pow(inColor * texture(colorTex, vec2(inUV.s, inUV.t)).rgb, vec3(2.2)); // conversion from sRGB
     // to linear space
     vec3 normal = tempNormal;
     vec2 metalRough = texture(metalRoughTex, inUV).bg;
