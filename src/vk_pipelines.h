@@ -14,12 +14,16 @@ class PipelineBuilder
 
     VkPipelineInputAssemblyStateCreateInfo _inputAssembly;
     VkPipelineRasterizationStateCreateInfo _rasterizer;
-    VkPipelineColorBlendAttachmentState _colorBlendAttachment;
+    // VkPipelineColorBlendAttachmentState _colorBlendAttachment;
     VkPipelineMultisampleStateCreateInfo _multisampling;
     VkPipelineLayout _pipelineLayout;
     VkPipelineDepthStencilStateCreateInfo _depthStencil;
     VkPipelineRenderingCreateInfo _renderInfo;
-    VkFormat _colorAttachmentformat;
+    // VkFormat _colorAttachmentformat;
+
+    // use this for multiple color attachments.
+    std::vector<VkFormat> _colorAttachmentFormats;
+    std::vector<VkPipelineColorBlendAttachmentState> _colorBlendAttachments;
 
     PipelineBuilder()
     {
@@ -38,6 +42,7 @@ class PipelineBuilder
     void set_multisampling_custom(VkSampleCountFlagBits sampleCount);
     void disable_blending();
     void set_color_attachment_format(VkFormat format);
+    void set_multiple_color_attachments(std::vector<VkFormat> formats);
     void set_depth_format(VkFormat format);
     void disable_depthtest();
     void enable_depthtest(bool depthWriteEnable, VkCompareOp op);

@@ -118,7 +118,7 @@ void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
     GPUSceneData *sceneUniformData = (GPUSceneData *)gpuSceneDataBuffer.info.pMappedData;
     *sceneUniformData = sceneData;
 
-    // // create a descriptor set that binds that buffer and update it
+    // create a descriptor set that binds that buffer and update it
     VkDescriptorSet globalDescriptor = passExec.frameDescriptor->allocate(
         passExec._device, _gpuSceneDataDescriptorLayout); // temporarily getting the layout through the constructor.
                                                           // Will need to figure out a better way later.

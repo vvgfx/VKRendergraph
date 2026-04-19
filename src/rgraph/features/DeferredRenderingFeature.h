@@ -2,6 +2,7 @@
 #include "../IFeature.h"
 #include "MaterialSystem.h"
 #include "vk_engine.h"
+#include "vk_types.h"
 
 namespace rgraph
 {
@@ -25,6 +26,11 @@ namespace rgraph
 
         VkDescriptorSetLayout _gpuSceneDataDescriptorLayout;
         VkDescriptorSetLayout lightDescriptorSetLayout;
+        VkDescriptorSetLayout compDescriptorSetLayout;
+
+        MaterialPipeline geometryPipeline;
+        MaterialPipeline compositePipeline;
+
         DrawContext &drawContext;
         GPUSceneData &gpuSceneData;
     };
