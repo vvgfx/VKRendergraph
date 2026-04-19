@@ -204,13 +204,13 @@ void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
 void rgraph::PBRShadingFeature::createPipelines(MaterialSystemCreateInfo &info)
 {
     VkShaderModule meshFragShader;
-    if (!vkutil::load_shader_module("../shaders/light_mesh.frag.spv", info._device, &meshFragShader))
+    if (!vkutil::load_shader_module("../shaders/PBR/lights/light_mesh.frag.spv", info._device, &meshFragShader))
     {
         fmt::println("Error when building the triangle fragment shader module\n");
     }
 
     VkShaderModule meshVertexShader;
-    if (!vkutil::load_shader_module("../shaders/light_mesh.vert.spv", info._device, &meshVertexShader))
+    if (!vkutil::load_shader_module("../shaders/PBR/lights/light_mesh.vert.spv", info._device, &meshVertexShader))
     {
         fmt::println("Error when building the triangle vertex shader module\n");
     }

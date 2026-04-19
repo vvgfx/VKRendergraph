@@ -193,17 +193,7 @@ void VulkanEngine::init_swapchain()
             auto _gpuResourceAllocator = GPUResourceAllocator::Instance();
             vkDestroyImageView(_device, _drawImage.imageView, nullptr);
             _gpuResourceAllocator.destroy_image(
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
+
                 _drawImage.image, _drawImage.allocation);
 
             vkDestroyImageView(_device, _depthImage.imageView, nullptr);
@@ -378,13 +368,13 @@ void VulkanEngine::init_background_pipelines()
     VK_CHECK(vkCreatePipelineLayout(_device, &computeLayout, nullptr, &_gradientPipelineLayout));
 
     VkShaderModule gradientShader;
-    if (!vkutil::load_shader_module("../shaders/gradient_color.comp.spv", _device, &gradientShader))
+    if (!vkutil::load_shader_module("../shaders/compute/gradient_color.comp.spv", _device, &gradientShader))
     {
         fmt::print("Error when building the compute shader \n");
     }
 
     VkShaderModule skyShader;
-    if (!vkutil::load_shader_module("../shaders/sky.comp.spv", _device, &skyShader))
+    if (!vkutil::load_shader_module("../shaders/compute/sky.comp.spv", _device, &skyShader))
     {
         fmt::print("Error when building the compute shader \n");
     }

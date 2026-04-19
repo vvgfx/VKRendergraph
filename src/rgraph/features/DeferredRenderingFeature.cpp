@@ -30,6 +30,17 @@ rgraph::DeferredRenderingFeature::DeferredRenderingFeature(DrawContext &drawCont
     }
 
     createPipelines(materialSystemCreateInfo);
+
+    delQueue.push_function(
+        [_device, this]()
+        {
+            vkDestroyDescriptorSetLayout(_device, lightDescriptorSetLayout, nullptr);
+            vkDestroyDescriptorSetLayout(_device, compDescriptorSetLayout, nullptr);
+            vkDestroyPipelineLayout(_device, geometryPipeline.layout, nullptr);
+            vkDestroyPipelineLayout(_device, compositePipeline.layout, nullptr);
+            vkDestroyPipeline(_device, geometryPipeline.pipeline, nullptr);
+            vkDestroyPipeline(_device, compositePipeline.pipeline, nullptr);
+        });
 }
 
 void rgraph::DeferredRenderingFeature::Register(rgraph::Rendergraph *builder)
@@ -68,6 +79,14 @@ void rgraph::DeferredRenderingFeature::Register(rgraph::Rendergraph *builder)
             pass.CreatesBuffer("gpuSceneBuffer", sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         },
         [&](PassExecution &passExec) { compositePass(passExec); });
+}
+
+void rgraph::DeferredRenderingFeature::geometryPass(rgraph::PassExecution &passExec)
+{
+}
+
+void rgraph::DeferredRenderingFeature::compositePass(rgraph::PassExecution &passExec)
+{
 }
 
 void rgraph::DeferredRenderingFeature::createPipelines(MaterialSystemCreateInfo &materialSystemCreateInfo)

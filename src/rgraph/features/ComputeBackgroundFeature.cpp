@@ -56,7 +56,7 @@ void rgraph::ComputeBackgroundFeature::InitPipeline(VkDevice _device, DeletionQu
     VK_CHECK(vkCreatePipelineLayout(_device, &computeLayout, nullptr, &pipelineLayout));
 
     VkShaderModule skyShader;
-    if (!vkutil::load_shader_module("../shaders/sky.comp.spv", _device, &skyShader))
+    if (!vkutil::load_shader_module("../shaders/compute/sky.comp.spv", _device, &skyShader))
     {
         fmt::print("Error when building the compute shader \n");
     }
