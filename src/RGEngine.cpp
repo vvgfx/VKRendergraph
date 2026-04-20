@@ -19,7 +19,7 @@ void RGEngine::init()
 
     VulkanEngine::init();
 
-    std::string structurePath = {"../assets/outpostWithLights3.glb"};
+    std::string structurePath = {"../assets/outpostWithLights4.glb"};
 
     GLTFCreatorData creatorData = {};
 

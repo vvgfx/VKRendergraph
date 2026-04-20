@@ -116,9 +116,9 @@ std::optional<std::shared_ptr<sgraph::Scene>> loadGltf(GLTFCreatorData creatorDa
 
         ldata->color = glm::vec3(light.color[0], light.color[1], light.color[2]);
         ldata->intensity = light.intensity;
-        ldata->range = light.range.value_or(0);
-        ldata->innerConeAngle = light.innerConeAngle.value_or(0);
-        ldata->outerConeAngle = light.outerConeAngle.value_or(0);
+        ldata->range = light.range.value_or(-1);
+        ldata->innerConeAngle = light.innerConeAngle.value_or(-1);
+        ldata->outerConeAngle = light.outerConeAngle.value_or(-1);
         ldata->type = (light.type == fastgltf::LightType::Directional) ? LightingData::LightType::Directional
                       : (light.type == fastgltf::LightType::Point)     ? LightingData::LightType::Point
                                                                        : LightingData::LightType::Spot;
