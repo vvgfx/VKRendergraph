@@ -75,6 +75,7 @@ void sgraph::LightNode::Draw(const glm::mat4 &topMatrix, DrawContext &ctx)
     lData.color = lightingData->color;
     lData.intensity = lightingData->intensity;
     lData.transform = topMatrix * this->worldTransform;
+    lData.range = lightingData->range;
     ctx.lights.push_back(lData);
     Node::Draw(topMatrix, ctx);
 }

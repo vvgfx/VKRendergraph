@@ -30,6 +30,8 @@ namespace vkinit
 
     VkRenderingAttachmentInfo depth_attachment_info(VkImageView view, VkImageLayout layout /*= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL*/);
 
+    VkRenderingAttachmentInfo depth_attachment_info(VkImageView view, VkImageLayout layout, VkClearValue *clear);
+
     VkRenderingAttachmentInfo depth_attachment_info(VkImageView view, VkImageLayout layout, VkImageView resolveImageView,
                                                     VkImageLayout resolveImageLayout, VkResolveModeFlagBits resolveMode);
 

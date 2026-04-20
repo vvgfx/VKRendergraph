@@ -181,6 +181,22 @@ VkRenderingAttachmentInfo vkinit::depth_attachment_info(VkImageView view, VkImag
     return depthAttachment;
 }
 
+VkRenderingAttachmentInfo vkinit::depth_attachment_info(VkImageView view, VkImageLayout layout, VkClearValue *clear)
+{
+    VkRenderingAttachmentInfo depthAttachment{};
+    depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    depthAttachment.pNext = nullptr;
+    depthAttachment.imageView = view;
+    depthAttachment.imageLayout = layout;
+    depthAttachment.loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    if (clear)
+    {
+        depthAttachment.clearValue = *clear;
+    }
+    return depthAttachment;
+}
+
 VkRenderingAttachmentInfo vkinit::depth_attachment_info(VkImageView view, VkImageLayout layout, VkImageView resolveImageView,
                                                         VkImageLayout resolveImageLayout, VkResolveModeFlagBits resolveMode)
 {

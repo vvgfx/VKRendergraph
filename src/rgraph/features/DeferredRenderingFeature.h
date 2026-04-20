@@ -26,6 +26,8 @@ namespace rgraph
             glm::mat4 transform;
             glm::vec3 color;
             float intensity;
+            float range;
+            float _pad[3]; // pad to 96 bytes
         };
 
         struct LightData

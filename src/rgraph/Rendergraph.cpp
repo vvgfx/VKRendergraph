@@ -314,7 +314,8 @@ void rgraph::Rendergraph::Run(FrameData &frameData)
             // setup depth attachment similarly
             if (!pass.depthAttachment.bResolve)
             {
-                depthAttachment = vkinit::depth_attachment_info(depthImage.imageView, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+                depthAttachment =
+                    vkinit::depth_attachment_info(depthImage.imageView, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, pass.depthAttachment.clear);
             }
             else
             {

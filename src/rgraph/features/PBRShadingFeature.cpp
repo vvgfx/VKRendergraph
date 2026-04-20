@@ -105,6 +105,7 @@ void rgraph::PBRShadingFeature::renderScene(rgraph::PassExecution &passExec)
         pl.color = drawContext.lights[i].color;
         pl.transform = drawContext.lights[i].transform;
         pl.intensity = drawContext.lights[i].intensity;
+        pl.range = drawContext.lights[i].range;
         lightdata->pointLights[i] = pl;
     }
 

@@ -114,6 +114,7 @@ struct GPULightingData
                          // direction in world space.
     glm::vec3 color;
     float intensity;
+    float range;
 };
 
 // {{{ SCENEGRAPHS --------------------------

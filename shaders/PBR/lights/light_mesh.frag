@@ -47,6 +47,8 @@ void main()
         vec3 lightPos = currLight.transform[3].xyz;
         vec3 lightDistVec = lightPos - inPos.xyz;
         dist = length(lightDistVec);
+        if (dist > currLight.range)
+            continue;
         lightVec = lightDistVec / dist;
 
         halfwayVec = normalize(viewVec + lightVec);

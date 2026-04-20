@@ -20,6 +20,7 @@ struct PointLight
     mat4 transform;
     vec3 color;
     float intensity;
+    float range;
 };
 
 layout(set = 2, binding = 0) uniform LightData

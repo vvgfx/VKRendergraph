@@ -95,7 +95,7 @@ void rgraph::DeferredRenderingFeature::Register(rgraph::Rendergraph *builder)
             pass.ReadsImage("albedo_gbuf", VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             pass.ReadsImage("metalrough_gbuf", VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             pass.AddColorAttachment("drawImage", false, &colorClearValue);
-            pass.AddDepthStencilAttachment("depth_gbuf", true, &colorClearValue);
+            pass.AddDepthStencilAttachment("depth_gbuf", true, nullptr);
             pass.CreatesBuffer("lightBuffer", sizeof(LightData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
             pass.CreatesBuffer("gpuSceneBuffer", sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         },
@@ -289,6 +289,16 @@ void rgraph::DeferredRenderingFeature::transparentPass(rgraph::PassExecution &pa
         return;
     }
 
+    std::vector<uint32_t> transparent_draws;
+    transparent_draws.reserve(drawContext.TransparentSurfaces.size());
+    for (int i = 0; i < drawContext.TransparentSurfaces.size(); i++)
+    {
+        if (is_visible(drawContext.TransparentSurfaces[i], gpuSceneData.viewproj))
+        {
+            transparent_draws.push_back(i);
+        }
+    }
+
     // Scene data
     AllocatedBuffer gpuSceneDataBuffer = passExec.allocatedBuffers["gpuSceneBuffer"];
     GPUSceneData *sceneUniformData = (GPUSceneData *)gpuSceneDataBuffer.info.pMappedData;
@@ -311,6 +321,7 @@ void rgraph::DeferredRenderingFeature::transparentPass(rgraph::PassExecution &pa
         pl.color = drawContext.lights[i].color;
         pl.transform = drawContext.lights[i].transform;
         pl.intensity = drawContext.lights[i].intensity;
+        pl.range = drawContext.lights[i].range;
         lightdata->pointLights[i] = pl;
     }
 
@@ -345,8 +356,9 @@ void rgraph::DeferredRenderingFeature::transparentPass(rgraph::PassExecution &pa
     MaterialInstance *lastMaterial = nullptr;
     VkBuffer lastIndexBuffer = VK_NULL_HANDLE;
 
-    for (auto &r : drawContext.TransparentSurfaces)
+    for (auto &idx : transparent_draws)
     {
+        auto &r = drawContext.TransparentSurfaces[idx];
         if (r.material != lastMaterial)
         {
             lastMaterial = r.material;
