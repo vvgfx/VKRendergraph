@@ -31,7 +31,7 @@ class RGEngine : public VulkanEngine
     // gltf data
     std::unordered_map<std::string, std::shared_ptr<sgraph::Scene>> loadedScenes;
 
-    rgraph::Rendergraph builder;
+    rgraph::Rendergraph rgraphInstance;
     std::shared_ptr<rgraph::ComputeBackgroundFeature> computeFeature;
     std::shared_ptr<rgraph::PBRShadingFeature> PBRFeature;
     std::shared_ptr<rgraph::DeferredRenderingFeature> deferredFeature;

@@ -19,7 +19,7 @@ void RGEngine::init()
 
     VulkanEngine::init();
 
-    std::string structurePath = {"../assets/outpostWithLights3.glb"};
+    std::string structurePath = {"../assets/outpostWithLights4.glb"};
 
     // this is called after the pipelines are initialzed.
     auto structureFile = loadGltf(structurePath);
@@ -30,7 +30,7 @@ void RGEngine::init()
 
     structureFile.value()->name = "outpost";
 
-    builder.Init(_device, _drawImage.imageExtent, _instance);
+    rgraphInstance.Init(_device, _drawImage.imageExtent, _instance);
 
     VkExtent3D extent = {_windowExtent.width, _windowExtent.height, 1};
     computeFeature = std::make_shared<rgraph::ComputeBackgroundFeature>(_device, _mainDeletionQueue, extent, _drawImage);
@@ -43,16 +43,16 @@ void RGEngine::init()
     // create MSAA images. TODO: move these out somewhere later.
     createMsaaImages();
 
-    builder.AddTrackedImage("drawImage", VK_IMAGE_LAYOUT_UNDEFINED, _drawImage);
-    builder.AddTrackedImage("depthImage", VK_IMAGE_LAYOUT_UNDEFINED, _depthImage);
-    builder.AddTrackedImage("msaaColor", VK_IMAGE_LAYOUT_UNDEFINED, msaaColor);
-    builder.AddTrackedImage("msaaDepth", VK_IMAGE_LAYOUT_UNDEFINED, msaaDepth);
+    rgraphInstance.AddTrackedImage("drawImage", VK_IMAGE_LAYOUT_UNDEFINED, _drawImage);
+    rgraphInstance.AddTrackedImage("depthImage", VK_IMAGE_LAYOUT_UNDEFINED, _depthImage);
+    rgraphInstance.AddTrackedImage("msaaColor", VK_IMAGE_LAYOUT_UNDEFINED, msaaColor);
+    rgraphInstance.AddTrackedImage("msaaDepth", VK_IMAGE_LAYOUT_UNDEFINED, msaaDepth);
 
-    builder.AddFeature(computeFeature);
+    rgraphInstance.AddFeature(computeFeature);
     // builder.AddFeature(PBRFeature);
-    builder.AddFeature(deferredFeature);
+    rgraphInstance.AddFeature(deferredFeature);
 
-    builder.SetTimestampPeriod(timestampPeriod);
+    rgraphInstance.SetTimestampPeriod(timestampPeriod);
 }
 
 void RGEngine::init_pipelines()
@@ -177,7 +177,7 @@ void RGEngine::draw()
     // performance stuff.
     if (get_current_frame().timestampCount > 0)
     {
-        builder.ReadTimestamps(get_current_frame());
+        rgraphInstance.ReadTimestamps(get_current_frame());
     }
 
     lastCompleteStats = get_current_frame().stats;
@@ -199,8 +199,8 @@ void RGEngine::draw()
 
     VK_CHECK(vkResetFences(_device, 1, &get_current_frame()._renderFence));
 
-    builder.Build(get_current_frame()); // could potentially move this higher up to do some stuff before waiting on the current frame's fence?
-    builder.Run(get_current_frame());
+    rgraphInstance.Build(get_current_frame()); // could potentially move this higher up to do some stuff before waiting on the current frame's fence?
+    rgraphInstance.Run(get_current_frame());
 
     VkCommandBuffer cmd = get_current_frame()._mainCommandBuffer;
 
